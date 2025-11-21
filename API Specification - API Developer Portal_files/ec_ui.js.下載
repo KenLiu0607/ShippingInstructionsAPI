@@ -1,0 +1,153 @@
+/**
+ * 
+ */
+ec_ui = (function(){
+    // 嚴格模式
+    "use strict"
+    // 變數
+		
+//** multi-carousel */
+	//設定multi-carousel的變數、active item、偏移量
+	let multi_inner_width  =0;
+	let multi_item_width =0;
+	let multi_item_cnt =0;
+	let multi_item_active_cnt =0;
+	let multi_item_active_idx =0;
+	let multi_inner_translateX  =0;
+	let multi_inner_max_translateX  =0;
+	function multiCarouselSetActiveItemAndTranslateX(id,control){
+        const multi_inner = $(id+" .multi-carousel-inner");
+		let attr_translateX = parseInt($(id).attr("data-evg-translateX"));
+		
+        multi_inner_width = multi_inner.width();
+        multi_item_width = multi_inner.find(".multi-carousel-item").width();
+        multi_item_cnt = multi_inner.find(".multi-carousel-item").length;
+		multi_item_active_cnt = parseInt(multi_inner_width/multi_item_width);
+		multi_item_active_idx = multi_inner.find(".multi-carousel-item.active").index() == -1 ? 0 : multi_inner.find(".multi-carousel-item.active").index()
+		
+		//console.log("inner_width",multi_inner_width,"item_width",multi_item_width)
+		//判斷進入點，設定active的起始位置
+		switch (control) {
+			case 0: //初始或resize
+		    	break;
+			case 1: //next
+		    	multi_item_active_idx += attr_translateX || multi_item_active_cnt;
+		    	break;
+			case -1: //prev
+		    	multi_item_active_idx -= attr_translateX || multi_item_active_cnt;
+		    	break;
+			default:
+		}
+		
+		//設定active的multi-carousel-item
+		multi_inner.find(".multi-carousel-item").removeClass("active");
+		for(let i=0; i<multi_item_active_cnt; i++){
+			multi_inner.find(".multi-carousel-item").eq(i+multi_item_active_idx).addClass("active")
+		}
+		//計算偏移量 (四捨五入 取到 小數第二位)
+		multi_inner_translateX = multi_inner_width * Math.round((multi_item_active_idx/multi_item_active_cnt) * 100) / 100;
+		
+		
+		//設定計算最大偏移量(若總item數整除，商減1；不整除，取整數)
+		let max_inner_cnt = (multi_item_cnt % multi_item_active_cnt) == 0 ? (multi_item_cnt/multi_item_active_cnt)-1 : parseInt(multi_item_cnt/multi_item_active_cnt)
+		multi_inner_max_translateX = multi_inner_width * max_inner_cnt;
+		
+		//console.log("translateX",multi_inner_translateX,"max_translateX",multi_inner_max_translateX)
+		
+		//計算偏移量、control按鈕d-none設定
+		if(multi_inner_translateX == 0){
+			$(id+" .carousel-control-prev").addClass("d-none");
+			$(id+" .carousel-control-next").removeClass("d-none");
+		}else if(multi_inner_translateX >= multi_inner_max_translateX){
+			$(id+" .carousel-control-prev").removeClass("d-none");
+			$(id+" .carousel-control-next").addClass("d-none");
+			multi_inner_translateX = multi_inner_max_translateX;
+		}else{
+			$(id+" .carousel-control-prev").removeClass("d-none");
+			$(id+" .carousel-control-next").removeClass("d-none");
+		}
+		multi_inner.css({ transition: "all ease 0.7s",transform: "translate3d(-"+multi_inner_translateX+"px, 0px, 0px)" })
+		
+	}
+	//取得multi-carousel的id，在執行變數設定
+	function multiCarouselGetId(className) { 
+		for(let i=0; i<$(className).length;i++){
+			let id = $(className)[i].id
+			//設定multi-carousel的變數
+			multiCarouselSetActiveItemAndTranslateX(id,0)
+		}
+    }
+	function multiCarouselNext(e) {
+        const id = $(e.target).is("button") ? $(e.target).data("bs-target") : $(e.target).parent().data("bs-target");
+		//設定multi-carousel的變數
+		multiCarouselSetActiveItemAndTranslateX(id,1);
+		let dom = $(id);
+		let attr_auto_active = dom.attr("data-evg-auto-active");
+		
+		if(attr_auto_active){
+			let nextDom = dom.find(".nav-link.active").closest("li.multi-carousel-item").next().find(".nav-link");
+			new bootstrap.Tab(nextDom[0]).show();
+		}
+    }
+    function multiCarouselPrev(e) { 
+        const id = $(e.target).is("button") ? $(e.target).data("bs-target") : $(e.target).parent().data("bs-target");
+        //設定multi-carousel的變數
+		multiCarouselSetActiveItemAndTranslateX(id,-1)
+		let dom = $(id);
+		let attr_auto_active = dom.attr("data-evg-auto-active");
+		
+		if(attr_auto_active){
+			let nextDom = dom.find(".nav-link.active").closest("li.multi-carousel-item").prev().find(".nav-link");
+			new bootstrap.Tab(nextDom[0]).show();
+		}
+    }
+
+    // 將提供使用的 function 進行回傳
+    return {
+//** multi-carousel */
+        multiCarouselGetId:multiCarouselGetId,
+        multiCarouselNext:multiCarouselNext,
+        multiCarouselPrev:multiCarouselPrev
+    }
+})();
+// 使用方法 AIO.drawFixedtop
+
+(function(){
+  "use strict";
+
+	$(function(){
+		//<< 初始化設定 >>
+		//取得multi-carousel的id，在執行變數設定
+		if($("div").hasClass("ec-multi-carousel")){ ec_ui.multiCarouselGetId(".ec-multi-carousel"); }
+		
+		//<< 畫面大小變動時 >>
+		$(window).resize(function(e) {
+			//取得multi-carousel的id，在執行變數設定
+			if($("div").hasClass("ec-multi-carousel")){ ec_ui.multiCarouselGetId(".ec-multi-carousel"); }
+		 });
+		
+		//<< 卷軸移動時 >>
+		$(window).scroll(function(e) { });
+		
+		//<< Hover事件 >>
+		
+		//<< Click事件 >>
+		// carousel tab切換後，判斷 next prev button 是否 顯示
+		$(".ec-multi-carousel .nav-link").each(function(idx,dom){
+			dom.addEventListener('shown.bs.tab', function (event) {
+				let parent = $(event.target).parent();
+				let carousel = $(event.target).closest("div.ec-multi-carousel");
+				let nextBtn = carousel.find(".carousel-control-next");
+				let prevBtn = carousel.find(".carousel-control-prev")
+				parent.next().length > 0 ? nextBtn.removeClass("d-none"):nextBtn.addClass("d-none");
+				parent.prev().length > 0 ? prevBtn.removeClass("d-none"):prevBtn.addClass("d-none");
+			})
+		})
+		//multi-carousel的next, prev控制 P.S.之後會加入_ui裡的css
+	    $(".ec-multi-carousel .carousel-control-next").click(ec_ui.multiCarouselNext);
+	    $(".ec-multi-carousel .carousel-control-prev").click(ec_ui.multiCarouselPrev);
+
+		//<<Keypress事件 >>
+	})
+  
+})();

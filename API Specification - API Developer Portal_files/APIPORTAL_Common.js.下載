@@ -1,0 +1,45 @@
+APIPORTAL_Common = (function(){
+    // 嚴格模式
+    "use strict"
+
+    // 變數
+	let urlParamObj = {} //URL帶的參數
+	
+    // 函數
+	let mainFlow = {
+		"main":function(){
+		},
+		"eventOn":function(){
+		},
+		"defaultSetting":function(){
+		},
+	}
+	let eventFlow = {
+	}
+	let addEventListener = {
+		"tooltip": function(){
+			var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+			var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+				return new bootstrap.Tooltip(tooltipTriggerEl)
+			})
+		},
+		"modal": function(){
+		},
+	}
+	
+    // 將提供使用的 function 進行回傳
+    return {
+		urlParamObj:urlParamObj,
+		mainFlow:mainFlow,
+		eventFlow:eventFlow,
+		addEventListener:addEventListener,
+    }
+})();
+
+(function(){
+  "use strict";
+
+	$(function(){
+	})
+  
+})();

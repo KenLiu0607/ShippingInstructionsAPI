@@ -1,0 +1,79 @@
+/**
+ * 
+ */
+ec_common = (function(){
+    // 嚴格模式
+    "use strict"
+    // 變數
+	function slimScroll(elementName){
+		$(elementName).slimScroll({
+		        railVisible: true,
+		        alwaysVisible: true,
+		        allowPageScroll: true    
+		});
+	}
+	//偵測卷軸滑動時，往下滑超過200px出現backToTop按鈕
+	function showBackToTop(e) {
+		if ($(window).scrollTop() > 200) {
+			$(".js-btn-top").fadeIn();
+		} else {
+			$(".js-btn-top").fadeOut();
+		}
+	}
+	//卷軸回到最上方
+	function backToTop(e) {
+		$("html, body").animate({
+			scrollTop: 0
+		}, 1500);
+	}
+	//返回上一頁
+	function historyBack(e){
+		history.back();
+	}
+
+    // 將提供使用的 function 進行回傳
+    return {
+		slimScroll:slimScroll,
+		showBackToTop:showBackToTop,
+        backToTop:backToTop,
+		historyBack:historyBack
+    }
+})();
+// 使用方法 ec_common.showBackToTop
+
+Handlebars.registerHelper("inc", function(value, options){
+    return parseInt(value) + 1;
+});
+
+Handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
+    return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+});
+
+(function(){
+  "use strict";
+
+	$(function(){
+		//<< 初始化設定 >>
+		//console.log("is iframe?",ec.tools.fn.app.isIframe);
+		if(ec.tools.fn.app.isIframe == true){
+			$(".ec-header, .ec-footer").addClass("d-none");
+		}
+
+		//<< 畫面大小變動時 >>
+		$(window).resize(function(e) { });
+		
+		//<< 卷軸移動時 >>
+		$(window).scroll(function(e) {
+			ec_common.showBackToTop();
+		});
+		
+		//<< Hover事件 >>
+		$(".ec").hover(function(){  });
+		
+		//<< Click事件 >>
+		$(".js-btn-top").click(ec_common.backToTop);
+		
+		//<<Keypress事件 >>
+	})
+  
+})();
