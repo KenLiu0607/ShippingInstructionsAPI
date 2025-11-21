@@ -1,332 +1,858 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shipping Instructions Fields Explorer</title>
-  <style>
-    :root {
-      color-scheme: light;
-      --bg: #f5f7fb;
-      --card: #ffffff;
-      --text: #1f2933;
-      --muted: #52616b;
-      --accent: #2563eb;
-      --border: #e0e7ff;
-      --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    }
+<html lang="zh-Hant">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Shipping Instructions 查詢 - Pro</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+        <style>
+            /* =========================================================================
+            * 1. 顏色變數與深色模式 (Dark Mode)
+            * ========================================================================= */
+            :root {
+                /* Light Mode Base Colors */
+                --bg1: #f7f9fc;
+                --bg2: #eef1f6;
+                --card: #ffffff;
+                --stroke: #e2e8f0;
+                --text: #1e293b;
+                --muted: #64748b;
+                --accent: #3b82f6; /* Blue */
+                --accent-glow: rgba(59, 130, 246, 0.4);
+                --shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
 
-    * { box-sizing: border-box; }
+                /* New Semantic Colors (Light Mode) */
+                --model-color: #0c4a6e; /* Dark Cyan/Blue */
+                --type-color-string: #059669; /* Emerald Green */
+                --type-color-number: #ea580c; /* Orange */
+                --type-color-boolean: #c026d3; /* Magenta */
+                --type-color-array: #1d4ed8; /* Dark Blue */
+                --type-color-object: #be123c; /* Red */
+                --required-color: #3b82f6; /* Accent Blue */
+                --enum-bg: #e0f2fe; /* Light Blue */
+                --enum-text: #075985; /* Darker Blue */
 
-    body {
-      margin: 0;
-      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding: 24px;
-    }
+                /* Dark Mode Toggle */
+                --toggle-bg: #cbd5e1;
+                --toggle-handle: #ffffff;
+            }
 
-    .page {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
+            [data-theme="dark"] {
+                /* Dark Mode Base Colors */
+                --bg1: #0f172a;
+                --bg2: #1e293b;
+                --card: #2d3748;
+                --stroke: #4a5568;
+                --text: #f8fafc;
+                --muted: #94a3b8;
+                --accent: #60a5fa; /* Lighter Blue */
+                --accent-glow: rgba(96, 165, 250, 0.4);
+                --shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
 
-    header {
-      margin-bottom: 20px;
-    }
+                /* New Semantic Colors (Dark Mode) */
+                --model-color: #90e0ef; /* Light Cyan */
+                --type-color-string: #6ee7b7; /* Lighter Green */
+                --type-color-number: #fdba74; /* Lighter Orange */
+                --type-color-boolean: #f0abfc; /* Lighter Magenta */
+                --type-color-array: #93c5fd; /* Lighter Dark Blue */
+                --type-color-object: #f87171; /* Lighter Red */
+                --required-color: #60a5fa; /* Accent Blue */
+                --enum-bg: #1e3a8a; /* Dark Blue */
+                --enum-text: #93c5fd; /* Light Blue */
 
-    h1 {
-      font-size: 28px;
-      margin: 0 0 8px;
-    }
+                --toggle-bg: #4a5568;
+                --toggle-handle: #1e293b;
+            }
 
-    p.lead {
-      margin: 0;
-      color: var(--muted);
-    }
+            /* =========================================================================
+            * 2. 基本樣式與排版
+            * ========================================================================= */
+            * {
+                box-sizing: border-box;
+            }
 
-    .search-bar {
-      margin: 18px 0 12px;
-      position: relative;
-    }
+            body {
+                margin: 0;
+                min-height: 100vh;
+                color: var(--text);
+                background-color: var(--bg1);
+                background-image: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+                font-family: "Inter", "Noto Sans TC", system-ui, -apple-system, sans-serif;
+                padding: 32px 16px 60px;
+                transition: background-color 0.3s ease, color 0.3s ease;
+            }
 
-    .search-bar input {
-      width: 100%;
-      padding: 12px 14px 12px 40px;
-      font-size: 16px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--card);
-      box-shadow: var(--shadow);
-      outline: none;
-      transition: border-color 0.2s ease;
-    }
+            .page {
+                max-width: 1200px;
+                margin: 0 auto;
+                position: relative;
+            }
 
-    .search-bar input:focus {
-      border-color: var(--accent);
-    }
+            header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 24px;
+            }
 
-    .search-bar .icon {
-      position: absolute;
-      top: 50%;
-      left: 12px;
-      width: 18px;
-      height: 18px;
-      stroke: var(--muted);
-      transform: translateY(-50%);
-      pointer-events: none;
-    }
+            .header-text {
+                display: grid;
+                gap: 8px;
+            }
 
-    .status {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--muted);
-      font-size: 14px;
-      margin-bottom: 8px;
-    }
+            h1 {
+                margin: 0;
+                font-size: 32px;
+                letter-spacing: -0.02em;
+                font-weight: 800;
+            }
+            .lead {
+                margin: 0;
+                color: var(--muted);
+                font-size: 16px;
+            }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: var(--card);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-    }
+            /* =========================================================================
+            * 3. Dark Mode 切換開關
+            * ========================================================================= */
+            .dark-mode-toggle {
+                cursor: pointer;
+                width: 56px;
+                height: 32px;
+                background: var(--toggle-bg);
+                border-radius: 16px;
+                position: relative;
+                transition: background 0.3s;
+                margin-left: 16px;
+                flex-shrink: 0;
+                border: 1px solid var(--stroke);
+            }
 
-    thead {
-      background: #eef2ff;
-      color: #1f2a44;
-    }
+            .dark-mode-toggle::after {
+                content: "";
+                position: absolute;
+                top: 3px;
+                left: 3px;
+                width: 24px;
+                height: 24px;
+                background: var(--toggle-handle);
+                border-radius: 50%;
+                transition: transform 0.3s ease, background 0.3s;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            }
 
-    th, td {
-      padding: 12px 14px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-      vertical-align: top;
-      font-size: 14px;
-    }
+            [data-theme="dark"] .dark-mode-toggle::after {
+                transform: translateX(24px);
+            }
 
-    th {
-      font-weight: 700;
-    }
+            .toggle-wrapper {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                color: var(--muted);
+                font-size: 13px;
+                font-weight: 600;
+                white-space: nowrap;
+            }
 
-    tbody tr:hover {
-      background: #f8fafc;
-    }
+            /* =========================================================================
+            * 4. 工具欄與過濾器 (Toolbar & Filters)
+            * ========================================================================= */
+            .toolbar {
+                padding: 24px;
+                background: var(--card);
+                border-radius: 16px;
+                box-shadow: var(--shadow);
+                margin-bottom: 32px;
+                border: 1px solid var(--stroke);
+            }
 
-    .muted {
-      color: var(--muted);
-      font-size: 13px;
-    }
+            .filters {
+                display: grid;
+                gap: 16px;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                margin-bottom: 20px;
+            }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #e5edff;
-      color: #1e40af;
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-weight: 600;
-      font-size: 12px;
-    }
+            .field {
+                display: grid;
+                gap: 6px;
+            }
 
-    .nowrap { white-space: nowrap; }
+            .field span {
+                font-size: 11px;
+                color: var(--muted);
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                font-weight: 600;
+            }
 
-    .enum-list {
-      display: inline-flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
+            .field input {
+                width: 100%;
+                border: 1px solid var(--stroke);
+                background: var(--bg1);
+                color: var(--text);
+                font-size: 15px;
+                outline: none;
+                padding: 10px 14px;
+                border-radius: 10px;
+                transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            }
 
-    .enum-item {
-      background: #eef2ff;
-      color: #1e3a8a;
-      padding: 2px 8px;
-      border-radius: 8px;
-      font-size: 12px;
-      line-height: 1.4;
-    }
+            .field input:focus {
+                border-color: var(--accent);
+                background: var(--card);
+                box-shadow: 0 0 0 3px var(--accent-glow);
+            }
 
-    @media (max-width: 960px) {
-      th:nth-child(4), td:nth-child(4),
-      th:nth-child(5), td:nth-child(5),
-      th:nth-child(6), td:nth-child(6) {
-        min-width: 220px;
-      }
-      table { display: block; overflow-x: auto; }
-    }
-  </style>
-</head>
-<body>
-  <div class="page">
-    <header>
-      <h1>Shipping Instructions 可查詢欄位</h1>
-      <p class="lead">依照 parsed_fields.json 產生的欄位清單，可即時模糊搜尋欄位名稱、型別、描述或欄位結構。</p>
-    </header>
+            .actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                align-items: center;
+                margin-bottom: 20px;
+            }
 
-    <div class="search-bar">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-      <input id="search" type="search" placeholder="搜尋 model / field / type / description..." autocomplete="off" />
-    </div>
-    <div class="status"><span id="match-count">載入中...</span><span class="muted">支援即時模糊搜尋</span></div>
+            .filter-summary {
+                margin: 6px 0 12px;
+                font-size: 13px;
+                color: var(--accent);
+                font-weight: 700;
+            }
 
-    <table aria-label="Shipping instruction fields">
-      <thead>
-        <tr>
-          <th>Model</th>
-          <th>Field</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>中文描述</th>
-          <th>Required</th>
-          <th>Example</th>
-          <th>Enum</th>
-        </tr>
-      </thead>
-      <tbody id="results"></tbody>
-    </table>
-  </div>
+            .summary-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 10px;
+                border-radius: 999px;
+                background: rgba(59, 130, 246, 0.12);
+                color: var(--text);
+                border: 1px solid rgba(59, 130, 246, 0.3);
+                font-weight: 600;
+            }
 
-  <script>
-    const searchInput = document.getElementById('search');
-    const resultsBody = document.getElementById('results');
-    const matchCount = document.getElementById('match-count');
-    let fieldData = [];
+            /* =========================================================================
+            * 5. 按鈕 (Buttons)
+            * ========================================================================= */
+            button {
+                border: 1px solid var(--stroke);
+                background: var(--card);
+                color: var(--text);
+                border-radius: 10px;
+                padding: 10px 18px;
+                font-size: 14px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            }
 
-    const translator = (() => {
-      const replacements = [
-        { pattern: /shipping instructions/gi, replace: '提單指示' },
-        { pattern: /transport document/gi, replace: '運輸文件' },
-        { pattern: /bill of lading/gi, replace: '提單' },
-        { pattern: /sea waybill/gi, replace: '海運提單' },
-        { pattern: /identifier/gi, replace: '識別碼' },
-        { pattern: /reference/gi, replace: '參考號' },
-        { pattern: /code/gi, replace: '代碼' },
-        { pattern: /description/gi, replace: '描述' },
-        { pattern: /required/gi, replace: '必填' },
-        { pattern: /optional/gi, replace: '選填' },
-        { pattern: /indicates?/gi, replace: '表示' },
-        { pattern: /provides?/gi, replace: '提供' },
-        { pattern: /provided/gi, replace: '提供的' },
-        { pattern: /string/gi, replace: '字串' },
-        { pattern: /number/gi, replace: '數值' },
-        { pattern: /integer/gi, replace: '整數' },
-        { pattern: /boolean/gi, replace: '布林' },
-        { pattern: /list/gi, replace: '列表' },
-        { pattern: /array/gi, replace: '陣列' },
-        { pattern: /object/gi, replace: '物件' },
-        { pattern: /carrier/gi, replace: '承運人' },
-        { pattern: /vessel/gi, replace: '船舶' },
-        { pattern: /voyage/gi, replace: '航次' },
-        { pattern: /party/gi, replace: '參與者' },
-        { pattern: /location/gi, replace: '地點' },
-        { pattern: /country/gi, replace: '國家' },
-        { pattern: /city/gi, replace: '城市' },
-        { pattern: /postal/gi, replace: '郵遞' },
-        { pattern: /address/gi, replace: '地址' },
-        { pattern: /email/gi, replace: '電子郵件' },
-        { pattern: /phone/gi, replace: '電話' },
-        { pattern: /contact/gi, replace: '聯絡人' },
-        { pattern: /date/gi, replace: '日期' },
-        { pattern: /time/gi, replace: '時間' },
-        { pattern: /status/gi, replace: '狀態' },
-        { pattern: /approval/gi, replace: '核准' },
-      ];
+            button:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow);
+            }
 
-      const fineGrain = (text) => {
-        return text
-          .split(/(\\n|\\r\\n)/)
-          .map(segment => {
-            return segment.split(/(\b)/).map(part => {
-              const rule = replacements.find(r => {
-                r.pattern.lastIndex = 0;
-                return r.pattern.test(part);
-              });
-              if (rule) {
-                rule.pattern.lastIndex = 0;
-                return part.replace(rule.pattern, rule.replace);
-              }
-              return part;
-            }).join('');
-          })
-          .join('');
-      };
+            button.primary {
+                background: var(--accent);
+                border: none;
+                color: #ffffff;
+                font-weight: 700;
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 6px 18px var(--accent-glow);
+            }
 
-      return (text = '') => {
-        const trimmed = text.trim();
-        if (!trimmed) return '';
-        const rough = fineGrain(trimmed);
-        if (rough === trimmed) {
-          return `${trimmed}（繁體中文翻譯建議：請依內容調整）`;
-        }
-        return rough;
-      };
-    })();
+            /* Primary Button Glow Effect */
+            button.primary::after {
+                content: "";
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: rgba(255, 255, 255, 0.1);
+                transform: rotate(45deg);
+                transition: all 0.5s ease;
+                opacity: 0;
+            }
 
-    const formatEnum = (values) => {
-      if (!values || !Array.isArray(values) || values.length === 0) return '<span class="muted">-</span>';
-      return `<span class="enum-list">${values.map(v => `<span class="enum-item" title="${escapeHtml(v)}">${escapeHtml(v)}</span>`).join('')}</span>`;
-    };
+            button.primary:hover::after {
+                left: 100%;
+                opacity: 1;
+            }
 
-    const escapeHtml = (str = '') => str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+            /* =========================================================================
+            * 6. 元資訊與備註 (Meta & Note)
+            * ========================================================================= */
+            .meta {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                align-items: center;
+                color: var(--muted);
+                font-size: 14px;
+            }
 
-    const renderRows = (rows) => {
-      resultsBody.innerHTML = rows.map(item => {
-        const zhDescription = translator(item.description || '');
-        return `
-          <tr>
-            <td class="nowrap">${escapeHtml(item.model || '')}</td>
-            <td class="nowrap">${escapeHtml(item.field || '')}</td>
-            <td class="nowrap">${escapeHtml(item.type || '')}</td>
-            <td>${escapeHtml(item.description || '')}</td>
-            <td>${escapeHtml(zhDescription)}</td>
-            <td class="nowrap">${item.required ? '<span class="badge">必填</span>' : '<span class="muted">選填</span>'}</td>
-            <td>${item.example ? `<code>${escapeHtml(item.example)}</code>` : '<span class="muted">-</span>'}</td>
-            <td>${formatEnum(item.enum)}</td>
-          </tr>
-        `;
-      }).join('');
-      matchCount.textContent = `${rows.length} 筆符合結果`;
-    };
+            .pill {
+                display: inline-flex;
+                gap: 8px;
+                align-items: center;
+                padding: 8px 14px;
+                border-radius: 999px;
+                border: 1px solid var(--stroke);
+                background: var(--bg2);
+                color: var(--text);
+                font-weight: 600;
+                font-size: 13px;
+            }
 
-    const filterRows = (term) => {
-      if (!term) return fieldData;
-      const keyword = term.toLowerCase();
-      return fieldData.filter(item => {
-        const haystacks = [item.field, item.type, item.description, item.model];
-        return haystacks.some(value => (value || '').toLowerCase().includes(keyword));
-      });
-    };
+            .status-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                display: inline-block;
+                background: var(--accent);
+                transition: background 0.3s;
+            }
 
-    const initialize = async () => {
-      try {
-        const response = await fetch('parsed_fields.json');
-        const data = await response.json();
-        fieldData = data;
-        renderRows(fieldData);
-      } catch (error) {
-        resultsBody.innerHTML = `<tr><td colspan="8">無法載入資料：${escapeHtml(error.message)}</td></tr>`;
-        matchCount.textContent = '載入失敗';
-      }
-    };
+            /* =========================================================================
+            * 7. 表格樣式 (Table)
+            * ========================================================================= */
+            table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+                background: var(--card);
+                border: 1px solid var(--stroke);
+                border-radius: 16px;
+                overflow: hidden;
+                box-shadow: var(--shadow);
+            }
 
-    searchInput.addEventListener('input', (event) => {
-      const filtered = filterRows(event.target.value.trim());
-      renderRows(filtered);
-    });
+            thead {
+                background: var(--bg2);
+                transition: background 0.3s;
+            }
 
-    initialize();
-  </script>
-</body>
+            th,
+            td {
+                padding: 14px 18px;
+                text-align: left;
+                border-bottom: 1px solid var(--stroke);
+                font-size: 14px;
+                vertical-align: middle;
+                transition: border-color 0.3s;
+            }
+
+            th {
+                color: var(--text);
+                font-weight: 700;
+                white-space: nowrap;
+            }
+
+            tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+            tbody tr:hover {
+                background: var(--bg2);
+                transition: background 0.2s ease;
+            }
+
+            .muted {
+                color: var(--muted);
+            }
+
+            /* 新增：欄位值的樣式容器 */
+            .field-value {
+                font-weight: 600;
+                color: var(--text);
+            }
+
+            /* =========================================================================
+            * 8. 標籤與徽章 (Badges)
+            * ========================================================================= */
+            .badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 5px 12px;
+                border-radius: 999px;
+                font-size: 12px;
+                font-weight: 700;
+                border: 1px solid transparent;
+                white-space: nowrap;
+            }
+
+            .required {
+                background: #dbeafe; /* Blue-50 */
+                color: #1e40af; /* Blue-800 */
+                border-color: #93c5fd; /* Blue-300 */
+            }
+            [data-theme="dark"] .required {
+                background: rgba(59, 130, 246, 0.2);
+                color: #93c5fd;
+                border-color: rgba(59, 130, 246, 0.4);
+            }
+
+            .optional {
+                background: #f3f4f6; /* Gray-100 */
+                color: #4b5563; /* Gray-700 */
+                border-color: #e5e7eb; /* Gray-200 */
+            }
+            [data-theme="dark"] .optional {
+                background: rgba(148, 163, 184, 0.2);
+                color: #cbd5e1;
+                border-color: rgba(148, 163, 184, 0.4);
+            }
+
+            .model-chip {
+                display: inline-flex;
+                align-items: center;
+                padding: 4px 10px;
+                border-radius: 10px;
+                background: rgba(79, 156, 249, 0.12);
+                color: var(--model-color); /* 使用新的 Model 顏色 */
+                border: 1px solid rgba(79, 156, 249, 0.3);
+                font-weight: 700;
+                font-size: 12px;
+                white-space: nowrap;
+            }
+
+            /* =========================================================================
+            * 9. 程式碼與列舉值 (Code & Enum)
+            * ========================================================================= */
+            .enum-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                max-width: 300px;
+            }
+
+            .enum-item {
+                padding: 4px 10px;
+                border-radius: 8px;
+                background: var(--enum-bg); /* 使用新的 Enum 背景色 */
+                color: var(--enum-text); /* 使用新的 Enum 文字色 */
+                border: 1px solid var(--stroke);
+                font-size: 11px;
+                font-weight: 600;
+                white-space: nowrap;
+            }
+
+            code {
+                background: var(--bg2);
+                padding: 3px 8px;
+                border-radius: 6px;
+                font-family: monospace;
+                font-size: 13px;
+                color: var(--text);
+                border: 1px solid var(--stroke); /* 程式碼塊增加邊框 */
+            }
+
+            .nowrap {
+                white-space: nowrap;
+            }
+
+            /* 新增：依 Type 區分文字顏色 */
+            .field-type-string {
+                color: var(--type-color-string);
+                font-weight: 700;
+            }
+            .field-type-number,
+            .field-type-integer {
+                color: var(--type-color-number);
+                font-weight: 700;
+            }
+            .field-type-boolean {
+                color: var(--type-color-boolean);
+                font-weight: 700;
+            }
+            .field-type-array {
+                color: var(--type-color-array);
+                font-weight: 700;
+            }
+            .field-type-object {
+                color: var(--type-color-object);
+                font-weight: 700;
+            }
+
+            /* 新增：Description/中文說明 的文字顏色與樣式 */
+            .field-description {
+                font-weight: 500;
+            }
+            .field-zh-description {
+                color: var(--muted);
+                font-size: 13px;
+            }
+
+            /* =========================================================================
+            * 10. RWD 適應性 (Media Queries)
+            * ========================================================================= */
+            @media (max-width: 1024px) {
+                h1 {
+                    font-size: 28px;
+                }
+                .toolbar {
+                    padding: 20px;
+                }
+                .filters {
+                    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                }
+                th,
+                td {
+                    padding: 12px 14px;
+                    font-size: 13px;
+                }
+            }
+
+            @media (max-width: 768px) {
+                body {
+                    padding: 16px 12px 32px;
+                }
+                header {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+                .dark-mode-toggle {
+                    margin-top: 10px;
+                }
+                .toolbar {
+                    margin-bottom: 24px;
+                }
+                table {
+                    display: block;
+                    overflow-x: auto;
+                    border-radius: 12px;
+                    width: 100%;
+                    white-space: nowrap;
+                }
+                th,
+                td {
+                    min-width: 120px;
+                }
+            }
+        </style>
+    </head>
+    <body data-theme="light">
+        <div class="page">
+            <header>
+                <div class="header-text">
+                    <h1>📦 Shipping Instructions 欄位查詢</h1>
+                </div>
+                <div class="toggle-wrapper" aria-label="切換模式">
+                    <span aria-hidden="true">☀️</span>
+                    <div id="dark-mode-toggle" class="dark-mode-toggle" title="切換深色/淺色模式"></div>
+                    <span aria-hidden="true">⚫</span>
+                </div>
+            </header>
+
+            <div class="toolbar">
+                <div class="filters">
+                    <label class="field">
+                        <span>Field</span>
+                        <input id="filter-field" type="search" placeholder="HSCodes" autocomplete="off" />
+                    </label>
+                    <label class="field">
+                        <span>Type</span>
+                        <input id="filter-type" type="search" placeholder="string / boolean / array" autocomplete="off" />
+                    </label>
+                    <!-- <label class="field">
+                        <span>Description (含中文)</span>
+                        <input id="filter-description" type="search" placeholder="輸入英文或中文關鍵字" autocomplete="off" />
+                    </label> -->
+                    <label class="field">
+                        <span>Required</span>
+                        <input id="filter-required" type="search" placeholder="true / false / 必填 / 選填" autocomplete="off" />
+                    </label>
+                    <label class="field">
+                        <span>Enum</span>
+                        <input id="filter-enum" type="search" placeholder="PRE / COL" autocomplete="off" />
+                    </label>
+                    <!-- <label class="field">
+                        <span>Example</span>
+                        <input id="filter-example" type="search" placeholder="SWB / e0559d83..." autocomplete="off" />
+                    </label> -->
+                </div>
+                <div class="actions">
+                    <button id="search-button" class="primary" type="button">🚀 立即查詢</button>
+                    <button id="reset-button" type="button">清除條件</button>
+                </div>
+                <div class="meta">
+                    <span class="pill"><span class="status-dot"></span><span id="match-count">尚未查詢</span></span>
+                </div>
+                <div class="filter-summary" id="filter-summary">目前條件：無。</div>
+            </div>
+
+            <table aria-label="Shipping instruction fields">
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <!-- <th>Description</th>
+                        <th>中文說明</th> -->
+                        <th>Required</th>
+                        <!-- <th>Example</th> -->
+                        <th>Enum</th>
+                    </tr>
+                </thead>
+                <tbody id="results"></tbody>
+            </table>
+        </div>
+
+        <script>
+            // =========================================================================
+            // 1. Dark Mode 邏輯 (保留)
+            // =========================================================================
+            const body = document.body;
+            const toggle = document.getElementById("dark-mode-toggle");
+
+            // 檢查 localStorage 或系統偏好設定
+            const getInitialTheme = () => {
+                const storedTheme = localStorage.getItem("theme");
+                if (storedTheme) {
+                    return storedTheme;
+                }
+                return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            };
+
+            const applyTheme = (theme) => {
+                body.setAttribute("data-theme", theme);
+                localStorage.setItem("theme", theme);
+            };
+
+            toggle.addEventListener("click", () => {
+                const currentTheme = body.getAttribute("data-theme");
+                const newTheme = currentTheme === "light" ? "dark" : "light";
+                applyTheme(newTheme);
+            });
+
+            // 初始化主題
+            applyTheme(getInitialTheme());
+
+            // =========================================================================
+            // 2. 原始查詢與渲染邏輯 (調整渲染部分)
+            // =========================================================================
+            const resultsBody = document.getElementById("results");
+            const matchCount = document.getElementById("match-count");
+            const filterSummary = document.getElementById("filter-summary");
+            let fieldData = [];
+            let dataLoaded = false;
+            let loading = false;
+
+            const filters = {
+                field: document.getElementById("filter-field"),
+                type: document.getElementById("filter-type"),
+                // description: document.getElementById("filter-description"),
+                required: document.getElementById("filter-required"),
+                // example: document.getElementById("filter-example"),
+                enum: document.getElementById("filter-enum"),
+            };
+
+            // 翻譯字典 (保留)
+            const dict = [
+                ["shipping instructions", "提單資料"],
+                ["transport document", "運輸文件"],
+                ["bill of lading", "提單"],
+                ["sea waybill", "海運提單"],
+                ["identifier", "識別碼"],
+                ["reference", "參考碼"],
+                ["code", "代碼"],
+                ["description", "說明"],
+                ["required", "必填"],
+                ["optional", "選填"],
+                ["string", "文字"],
+                ["integer", "整數"],
+                ["number", "數值"],
+                ["boolean", "布林"],
+                ["array", "陣列"],
+                ["object", "物件"],
+                ["carrier", "船公司"],
+                ["location", "地點"],
+                ["country", "國家"],
+                ["city", "城市"],
+                ["address", "地址"],
+                ["email", "電子郵件"],
+                ["phone", "電話"],
+                ["date", "日期"],
+                ["time", "時間"],
+                ["status", "狀態"],
+                ["approval", "核准"],
+                ["party", "相關方"],
+                ["contact", "聯絡人"],
+                ["vessel", "船名"],
+                ["voyage", "航次"],
+                ["name", "名稱"],
+                ["cargo", "貨物"],
+                ["container", "貨櫃"],
+                ["quantity", "數量"],
+                ["weight", "重量"],
+                ["volume", "體積"],
+            ];
+
+            const translateToZh = (text = "") => {
+                // 這裡應該是實際的翻譯邏輯，但由於無法存取外部資源，暫時保持原樣或簡單處理
+                return text && text.trim() ? text : "(no description)";
+            };
+
+            const escapeHtml = (str = "") => str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+            const formatEnum = (values) => {
+                if (!Array.isArray(values) || values.length === 0) return '<span class="muted">-</span>';
+                return `<span class="enum-list">${values.map((v) => `<span class="enum-item">${escapeHtml(String(v))}</span>`).join("")}</span>`;
+            };
+
+            const renderRows = (rows) => {
+                resultsBody.innerHTML = rows
+                    .map((item) => {
+                        const zh = translateToZh(item.description || "");
+                        const exampleHtml = item.example !== null && item.example !== undefined ? `<code>${escapeHtml(String(item.example))}</code>` : '<span class="muted">-</span>';
+                        const requiredBadge = item.required ? '<span class="badge required">必填</span>' : '<span class="badge optional">選填</span>';
+
+                        // 針對 Type 欄位，增加動態類別
+                        const typeClass = item.type ? `field-type-${String(item.type).toLowerCase()}` : "muted";
+                        return `
+                        <tr>
+                            <td class="nowrap">${item.model ? `<span class="model-chip field-model">${escapeHtml(item.model)}</span>` : '<span class="muted">-</span>'}</td>
+                            <td class="nowrap"><span class="field-value">${escapeHtml(item.field || "")}</span></td>
+                            <td class="nowrap"><span class="field-value ${typeClass}">${escapeHtml(item.type || "")}</span></td>
+                            <td class="nowrap field-required">${requiredBadge}</td>
+                            <td>${formatEnum(item.enum)}</td>
+                        </tr>
+                    `;
+                        //     return `
+                        //     <tr>
+                        //         <td class="nowrap">${item.model ? `<span class="model-chip field-model">${escapeHtml(item.model)}</span>` : '<span class="muted">-</span>'}</td>
+                        //         <td class="nowrap"><span class="field-value">${escapeHtml(item.field || "")}</span></td>
+                        //         <td class="nowrap"><span class="field-value ${typeClass}">${escapeHtml(item.type || "")}</span></td>
+                        //         <td><span class="field-value field-description">${escapeHtml(item.description || "")}</span></td>
+                        //         <td><span class="field-value field-zh-description">${zh}</span></td>
+                        //         <td class="nowrap field-required">${requiredBadge}</td>
+                        //         <td>${exampleHtml}</td>
+                        //         <td>${formatEnum(item.enum)}</td>
+                        //     </tr>
+                        // `;
+                    })
+                    .join("");
+                matchCount.textContent = `${rows.length} 筆符合條件`;
+            };
+
+            const fuzzyIncludes = (value, term) => (value ?? "").toString().toLowerCase().includes(term.toLowerCase());
+            const requiredLabel = (val) => (val ? "true required yes 必填 需要" : "false optional no 選填 不需要");
+
+            const filterRows = (terms) =>
+                fieldData.filter((item) => {
+                    const itemDescription = item.description || "";
+                    const itemZhDescription = translateToZh(itemDescription);
+                    const itemEnum = (item.enum || []).join(", ");
+
+                    return (
+                        (!terms.field || fuzzyIncludes(item.field, terms.field)) &&
+                        (!terms.type || fuzzyIncludes(item.type, terms.type)) &&
+                        // (!terms.description || fuzzyIncludes(itemDescription, terms.description) || fuzzyIncludes(itemZhDescription, terms.description)) &&
+                        (!terms.required || fuzzyIncludes(requiredLabel(item.required), terms.required)) &&
+                        // (!terms.example || fuzzyIncludes(item.example, terms.example)) &&
+                        (!terms.enum || fuzzyIncludes(itemEnum, terms.enum))
+                    );
+                });
+
+            const formatSummary = (terms) => {
+                const labels = {
+                    field: "Field",
+                    type: "Type",
+                    // description: "Description",
+                    required: "Required",
+                    // example: "Example",
+                    enum: "Enum",
+                };
+                const chips = [];
+                for (const [key, label] of Object.entries(labels)) {
+                    const val = terms[key];
+                    if (val) {
+                        chips.push(`<span class="summary-chip"><strong>${label}:</strong> ${escapeHtml(val)}</span>`);
+                    }
+                }
+                return chips.length ? `Current filters: ${chips.join(" ")}` : "Current filters: none.";
+            };
+
+            const renderPlaceholder = (message) => {
+                resultsBody.innerHTML = `<tr><td colspan="8" class="muted" style="text-align: center; padding: 30px;">${escapeHtml(message)}</td></tr>`;
+            };
+
+            const ensureData = async () => {
+                if (dataLoaded || loading) return;
+                loading = true;
+                matchCount.textContent = "載入資料中...";
+                try {
+                    // 模擬載入資料，您需要確保 parsed_fields_filtered.json 存在於正確的路徑
+                    const url = new URL("parsed_fields_filtered.json", window.location.href);
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    fieldData = await res.json();
+                    dataLoaded = true;
+                    matchCount.textContent = "資料已載入，請輸入條件";
+                } catch (err) {
+                    resultsBody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--type-color-object);">無法讀取 parsed_fields_filtered.json：${escapeHtml(
+                        err.message
+                    )}。請檢查檔案路徑。</td></tr>`;
+                    matchCount.textContent = "讀取檔案失敗";
+                    console.error(err);
+                } finally {
+                    loading = false;
+                }
+            };
+
+            const collectTerms = () => ({
+                field: filters.field.value.trim(),
+                type: filters.type.value.trim(),
+                // description: filters.description.value.trim(),
+                required: filters.required.value.trim(),
+                // example: filters.example.value.trim(),
+                enum: filters.enum.value.trim(),
+            });
+
+            const applyFilters = async () => {
+                const terms = collectTerms();
+                const hasInput = Object.values(terms).some((v) => v);
+
+                await ensureData();
+                if (!dataLoaded) return;
+
+                if (!hasInput) {
+                    renderPlaceholder("Enter keywords to search (data successfully loaded).");
+                    matchCount.textContent = "No query yet";
+                    filterSummary.innerHTML = "Current filters: none.";
+                    return;
+                }
+
+                const rows = filterRows(terms);
+                filterSummary.innerHTML = formatSummary(terms);
+                if (rows.length === 0) {
+                    renderPlaceholder("No data found. Try adjusting keywords.");
+                    matchCount.textContent = "0 matches";
+                    return;
+                }
+                renderRows(rows);
+            };
+
+            const resetFilters = () => {
+                Object.values(filters).forEach((input) => {
+                    input.value = "";
+                });
+                matchCount.textContent = "No query yet";
+                renderPlaceholder("Cleared. Please enter keywords to search.");
+                filterSummary.innerHTML = "Current filters: none.";
+            };
+
+            // 事件監聽
+            Object.values(filters).forEach((input) => input.addEventListener("input", applyFilters));
+
+            document.getElementById("search-button").addEventListener("click", applyFilters);
+            document.getElementById("reset-button").addEventListener("click", resetFilters);
+
+            // 初始提示
+            renderPlaceholder("Enter keywords to search (data loads on first search).");
+        </script>
+    </body>
 </html>
