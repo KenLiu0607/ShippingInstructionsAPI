@@ -1,5 +1,5 @@
-/* =========================================================================
-* 1. 顏色變數與深色模式 (Dark Mode)
+﻿/* =========================================================================
+* 1. 憿霈?楛?脫芋撘?(Dark Mode)
 * ========================================================================= */
 :root {
     /* Light Mode Base Colors */
@@ -57,7 +57,7 @@
 }
 
 /* =========================================================================
-            * 2. 基本樣式與排版
+            * 2. ?箸璅??????
             * ========================================================================= */
 * {
     box-sizing: border-box;
@@ -198,7 +198,7 @@ body {
 
 .tree-item {
     color: var(--text);
-    font-size: 8px;
+    font-size: 12px;
 }
 .tree-row {
     display: flex;
@@ -219,9 +219,9 @@ body {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
     border: 1px solid rgba(239, 68, 68, 0.35);
 }
-.tree-row.selected .tree-caret {
-    background: var(--type-color-object);
-    color: #ffffff;
+.tree-row.selected-ancestor {
+    background: linear-gradient(135deg, rgba(244, 63, 94, 0.12), rgba(248, 113, 113, 0.12));
+    border: 1px solid rgba(239, 68, 68, 0.25);
 }
 .tree-caret {
     width: 18px;
@@ -237,8 +237,6 @@ body {
 }
 .tree-item.expanded > .tree-row .tree-caret {
     transform: rotate(90deg);
-    background: var(--accent);
-    color: #ffffff;
 }
 .tree-item.leaf .tree-caret {
     opacity: 0.5;
@@ -284,7 +282,7 @@ h1 {
 }
 
 /* =========================================================================
-            * 3. Dark Mode 切換開關
+            * 3. Dark Mode ????
             * ========================================================================= */
 .dark-mode-toggle {
     cursor: pointer;
@@ -327,7 +325,7 @@ h1 {
 }
 
 /* =========================================================================
-            * 4. 工具欄與過濾器 (Toolbar & Filters)
+            * 4. 撌亙甈??蕪??(Toolbar & Filters)
             * ========================================================================= */
 .toolbar {
     padding: 24px;
@@ -403,7 +401,6 @@ h1 {
     color: var(--accent);
     font-weight: 700;
 }
-
 .summary-chip {
     display: inline-flex;
     align-items: center;
@@ -416,8 +413,9 @@ h1 {
     font-weight: 600;
 }
 
+
 /* =========================================================================
-            * 5. 按鈕 (Buttons)
+            * 5. ?? (Buttons)
             * ========================================================================= */
 button {
     border: 1px solid var(--stroke);
@@ -466,7 +464,7 @@ button.primary:hover::after {
 }
 
 /* =========================================================================
-            * 6. 元資訊與備註 (Meta & Note)
+            * 6. ??閮??酉 (Meta & Note)
             * ========================================================================= */
 .meta {
     display: flex;
@@ -500,7 +498,7 @@ button.primary:hover::after {
 }
 
 /* =========================================================================
-            * 7. 表格樣式 (Table)
+            * 7. 銵冽璅?? (Table)
             * ========================================================================= */
 table {
     width: 100%;
@@ -547,14 +545,14 @@ tbody tr:hover {
     color: var(--muted);
 }
 
-/* 新增：欄位值的樣式容器 */
+/* ?啣?嚗?雿潛?璅??摰孵 */
 .field-value {
     font-weight: 600;
     color: var(--text);
 }
 
 /* =========================================================================
-            * 8. 標籤與徽章 (Badges)
+            * 8. 璅惜?噬蝡?(Badges)
             * ========================================================================= */
 .badge {
     display: inline-flex;
@@ -569,42 +567,29 @@ tbody tr:hover {
 }
 
 .required {
-    background: #dbeafe; /* Blue-50 */
+    background: transparent;
     color: #1e40af; /* Blue-800 */
     border-color: #93c5fd; /* Blue-300 */
 }
 [data-theme="dark"] .required {
-    background: rgba(59, 130, 246, 0.2);
+    background: transparent;
     color: #93c5fd;
-    border-color: rgba(59, 130, 246, 0.4);
+    border-color: rgba(59, 130, 246, 0.6);
 }
 
 .optional {
-    background: #f3f4f6; /* Gray-100 */
+    background: transparent;
     color: #4b5563; /* Gray-700 */
     border-color: #e5e7eb; /* Gray-200 */
 }
 [data-theme="dark"] .optional {
-    background: rgba(148, 163, 184, 0.2);
+    background: transparent;
     color: #cbd5e1;
     border-color: rgba(148, 163, 184, 0.4);
 }
 
-.model-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: 10px;
-    background: rgba(79, 156, 249, 0.12);
-    color: var(--model-color); /* 使用新的 Model 顏色 */
-    border: 1px solid rgba(79, 156, 249, 0.3);
-    font-weight: 700;
-    font-size: 13px;
-    white-space: nowrap;
-}
-
 /* =========================================================================
-            * 9. 程式碼與列舉值 (Code & Enum)
+            * 9. 蝔?蝣潸?????(Code & Enum)
             * ========================================================================= */
 .enum-list {
     display: flex;
@@ -616,9 +601,9 @@ tbody tr:hover {
 .enum-item {
     padding: 4px 10px;
     border-radius: 8px;
-    background: var(--enum-bg); /* 使用新的 Enum 背景色 */
-    color: var(--enum-text); /* 使用新的 Enum 文字色 */
-    border: 1px solid var(--stroke);
+    background: transparent; /* 透明背景，只保留框線 */
+    color: var(--enum-text);
+    border: 1px solid var(--enum-text);
     font-size: 11px;
     font-weight: 600;
     white-space: nowrap;
@@ -631,14 +616,14 @@ code {
     font-family: monospace;
     font-size: 13px;
     color: var(--text);
-    border: 1px solid var(--stroke); /* 程式碼塊增加邊框 */
+    border: 1px solid var(--stroke); /* 蝔?蝣澆?憓??? */
 }
 
 .nowrap {
     white-space: nowrap;
 }
 
-/* 新增：依 Type 區分文字顏色 */
+/* ?啣?嚗? Type ???摮???*/
 .field-type-string {
     color: var(--type-color-string);
     font-weight: 700;
@@ -689,17 +674,20 @@ code {
     gap: 6px;
     padding: 6px 12px;
     border-radius: 999px;
-    border: 1px solid var(--stroke);
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(16, 185, 129, 0.12));
-    color: var(--text);
+    border: 1px solid rgba(251, 191, 36, 0.6);
+    background: transparent;
+    color: #000000;
     font-weight: 600;
     box-shadow: var(--shadow);
     transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
 }
+[data-theme="dark"] .member-button {
+    color: #fff7dc; /* 瘛梯璅∪??冽滓?脣?嚗???瘥?*/
+}
 .member-button:hover {
     transform: translateY(-1px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(16, 185, 129, 0.18));
+    background: transparent;
 }
 .member-button:active {
     transform: translateY(0);
@@ -759,7 +747,7 @@ code {
     padding-left: 16px;
 }
 
-/* 新增：Description/中文說明 的文字顏色與樣式 */
+/* ?啣?嚗escription/銝剜?隤芣? ??摮??脰?璅?? */
 .field-description {
     font-weight: 500;
 }
@@ -769,7 +757,7 @@ code {
 }
 
 /* =========================================================================
-            * 10. RWD 適應性 (Media Queries)
+            * 10. RWD ?拇???(Media Queries)
             * ========================================================================= */
 @media (max-width: 1024px) {
     h1 {
@@ -827,3 +815,5 @@ code {
         min-width: 120px;
     }
 }
+
+

@@ -13,8 +13,7 @@
             <div class="tree-panel">
                 <div class="tree-panel-header">
                     <div>
-                        <p class="panel-kicker">Model map</p>
-                        <!-- <h2 class="panel-title">欄位樹</h2> -->
+                        <p class="panel-kicker">Model Map</p>
                     </div>
                     <button class="sidebar-close" id="sidebar-close" type="button" aria-label="收合樹狀選單">×</button>
                 </div>
@@ -151,6 +150,8 @@
             let loading = false;
             let treeBuilt = false;
             let activeTreeRow = null;
+            // 樹狀選單目前的選取，用來鎖定對應的 Model/Field
+            let treeSelection = null;
 
             const filters = {
                 field: document.getElementById("filter-field"),
@@ -179,6 +180,28 @@
             const formatEnum = (values) => {
                 if (!Array.isArray(values) || values.length === 0) return '<span class="muted">-</span>';
                 return `<span class="enum-list">${values.map((v) => `<span class="enum-item">${escapeHtml(String(v))}</span>`).join("")}</span>`;
+            };
+
+            // 解除樹狀目前的標記（選取與父層醒目）
+            const clearTreeSelection = () => {
+                if (!treeContainer) return;
+                treeContainer.querySelectorAll(".tree-row.selected, .tree-row.selected-ancestor").forEach((el) => {
+                    el.classList.remove("selected", "selected-ancestor");
+                });
+                activeTreeRow = null;
+            };
+
+            // 將父層都套用醒目樣式
+            const highlightAncestors = (row) => {
+                let li = row?.parentElement;
+                while (li && li !== treeContainer) {
+                    const parentLi = li.parentElement?.closest("li");
+                    if (parentLi) {
+                        const parentRow = parentLi.querySelector(":scope > .tree-row");
+                        parentRow?.classList.add("selected-ancestor");
+                    }
+                    li = parentLi;
+                }
             };
 
             const buildTreeData = (data = []) => {
@@ -219,7 +242,7 @@
                 return root;
             };
 
-            const createTreeNode = (node, depth = 0) => {
+            const createTreeNode = (node, depth = 0, parentKey = "root") => {
                 const hasChildren = Array.isArray(node.children) && node.children.length > 0;
                 const li = document.createElement("li");
                 li.className = "tree-item";
@@ -233,6 +256,10 @@
                 const row = document.createElement("div");
                 row.className = "tree-row";
                 row.style.setProperty("--depth", depth);
+                row.dataset.key = node.key || "";
+                row.dataset.name = node.name || "";
+                row.dataset.parentKey = parentKey || "root";
+                row.dataset.hasChildren = hasChildren ? "1" : "";
                 row.innerHTML = `
                     <span class="tree-caret">${hasChildren ? "›" : "•"}</span>
                     <span class="tree-label">${escapeHtml(node.name)}</span>
@@ -242,7 +269,7 @@
                 if (hasChildren) {
                     const ul = document.createElement("ul");
                     ul.className = "tree-children";
-                    node.children.forEach((child) => ul.appendChild(createTreeNode(child, depth + 1)));
+                    node.children.forEach((child) => ul.appendChild(createTreeNode(child, depth + 1, node.key)));
                     li.appendChild(ul);
                 }
 
@@ -387,6 +414,8 @@
                     const itemZhDescription = translateToZh(itemDescription);
                     const itemEnum = (item.enum || []).join(", ");
                     return (
+                        (!terms.treeFieldExact || item.field === terms.treeFieldExact) &&
+                        (!terms.treeModel || item.model === terms.treeModel) &&
                         (!terms.field || fuzzyIncludes(item.field, terms.field)) &&
                         (!terms.type || fuzzyIncludes(item.type, terms.type)) &&
                         // (!terms.description || fuzzyIncludes(itemDescription, terms.description) || fuzzyIncludes(itemZhDescription, terms.description)) &&
@@ -406,6 +435,9 @@
                     enum: "Enum",
                 };
                 const chips = [];
+                if (terms.treeModel) {
+                    chips.push(`<span class="summary-chip"><strong>Model:</strong> ${escapeHtml(terms.treeModel)}</span>`);
+                }
                 for (const [key, label] of Object.entries(labels)) {
                     const val = terms[key];
                     if (val) {
@@ -485,19 +517,30 @@
             });
             window.addEventListener("scroll", hideTooltip);
 
+            // 點擊樹狀節點時，帶入 Field 並自動查詢
             treeContainer?.addEventListener("click", (event) => {
                 const row = event.target.closest(".tree-row");
                 if (!row) return;
                 const item = row.parentElement;
+                const caretClicked = !!event.target.closest(".tree-caret");
+
+                // 點擊 icon 只展開/收合，不觸發查詢
                 if (item?.classList.contains("collapsible")) {
                     item.classList.toggle("expanded");
                     item.classList.toggle("collapsed");
+                    if (caretClicked) return;
                 }
-                if (activeTreeRow && activeTreeRow !== row) {
-                    activeTreeRow.classList.remove("selected");
-                }
+
+                clearTreeSelection();
                 row.classList.add("selected");
                 activeTreeRow = row;
+                const selectedField = row.dataset.name || "";
+                const parentKey = row.dataset.parentKey || "";
+                const modelFromTree = parentKey && parentKey !== "root" ? parentKey : "";
+                treeSelection = { field: selectedField, model: modelFromTree };
+                filters.field.value = selectedField;
+                highlightAncestors(row);
+                applyFilters();
             });
 
             sidebarHandle?.addEventListener("click", async () => {
@@ -520,6 +563,8 @@
                 required: filters.required.value,
                 // example: filters.example.value.trim(),
                 enum: filters.enum.value.trim(),
+                treeModel: treeSelection?.model || "",
+                treeFieldExact: treeSelection?.field || "",
             });
 
             const applyFilters = async () => {
@@ -551,13 +596,24 @@
                 Object.values(filters).forEach((input) => {
                     input.value = "";
                 });
+                treeSelection = null;
+                clearTreeSelection();
                 matchCount.textContent = "No query yet";
                 renderPlaceholder("Cleared. Please enter keywords to search.");
                 filterSummary.innerHTML = "Current filters: none.";
             };
 
             // 事件監聽
-            Object.values(filters).forEach((input) => input.addEventListener("input", applyFilters));
+            Object.values(filters).forEach((input) =>
+                input.addEventListener("input", () => {
+                    if (input === filters.field) {
+                        // 手動輸入 Field 覆蓋樹狀選取
+                        treeSelection = null;
+                        clearTreeSelection();
+                    }
+                    applyFilters();
+                })
+            );
 
             document.getElementById("search-button").addEventListener("click", applyFilters);
             document.getElementById("reset-button").addEventListener("click", resetFilters);
