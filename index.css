@@ -80,6 +80,185 @@ body {
     position: relative;
 }
 
+.tree-sidebar {
+    position: fixed;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 1600;
+}
+
+.sidebar-handle {
+    pointer-events: auto;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    border: 1px solid var(--stroke);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(16, 185, 129, 0.14));
+    color: var(--text);
+    font-weight: 800;
+    box-shadow: var(--shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.sidebar-handle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(16, 185, 129, 0.2));
+}
+
+.tree-panel {
+    width: 400px;
+    max-height: calc(100vh - 64px);
+    background: var(--card);
+    border: 1px solid var(--stroke);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateX(-12px);
+    transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    pointer-events: none;
+    backdrop-filter: blur(8px);
+}
+
+.tree-sidebar.open .tree-panel {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+}
+.tree-sidebar.collapsed .tree-panel {
+    width: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    opacity: 0;
+    transform: translateX(-16px) scaleX(0.92);
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.tree-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--stroke);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+}
+.panel-kicker {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 800;
+}
+.panel-title {
+    margin: 2px 0 0 0;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+}
+
+.sidebar-close {
+    pointer-events: auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    border: 1px solid var(--stroke);
+    background: var(--bg1);
+    color: var(--text);
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow);
+}
+.sidebar-close:hover {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+}
+
+.tree-scroll {
+    max-height: calc(100vh - 138px);
+    overflow: auto;
+    padding: 10px 10px 14px 6px;
+    background: linear-gradient(180deg, rgba(148, 163, 184, 0.08), transparent);
+}
+
+.tree-root {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tree-item {
+    color: var(--text);
+    font-size: 8px;
+}
+.tree-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px 8px calc(14px + var(--depth, 0) * 14px);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+.tree-row:hover {
+    background: var(--bg2);
+    color: var(--accent);
+}
+.tree-row.selected {
+    background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(248, 113, 113, 0.2));
+    color: var(--text);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+}
+.tree-row.selected .tree-caret {
+    background: var(--type-color-object);
+    color: #ffffff;
+}
+.tree-caret {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: var(--bg2);
+    color: var(--muted);
+    font-size: 12px;
+    transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.tree-item.expanded > .tree-row .tree-caret {
+    transform: rotate(90deg);
+    background: var(--accent);
+    color: #ffffff;
+}
+.tree-item.leaf .tree-caret {
+    opacity: 0.5;
+}
+.tree-label {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.tree-children {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 14px;
+    display: none;
+    border-left: 1px dashed var(--stroke);
+}
+.tree-item.expanded > .tree-children {
+    display: block;
+}
+
 header {
     display: flex;
     justify-content: space-between;
@@ -599,6 +778,9 @@ code {
     .toolbar {
         padding: 20px;
     }
+    .tree-panel {
+        width: 320px;
+    }
     .filters {
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
@@ -612,6 +794,16 @@ code {
 @media (max-width: 768px) {
     body {
         padding: 16px 12px 32px;
+    }
+    .tree-sidebar {
+        top: auto;
+        bottom: 18px;
+        transform: none;
+        left: 10px;
+    }
+    .tree-panel {
+        width: 300px;
+        max-height: 70vh;
     }
     header {
         flex-direction: column;

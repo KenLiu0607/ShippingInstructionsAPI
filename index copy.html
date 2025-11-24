@@ -8,21 +8,6 @@
         <link rel="stylesheet" href="./index.css" />
     </head>
     <body data-theme="light">
-        <div class="tree-sidebar collapsed" id="tree-sidebar">
-            <button class="sidebar-handle" id="sidebar-handle" type="button" aria-label="展開欄位樹">☰</button>
-            <div class="tree-panel">
-                <div class="tree-panel-header">
-                    <div>
-                        <p class="panel-kicker">Model map</p>
-                        <!-- <h2 class="panel-title">欄位樹</h2> -->
-                    </div>
-                    <button class="sidebar-close" id="sidebar-close" type="button" aria-label="收合樹狀選單">×</button>
-                </div>
-                <div class="tree-scroll">
-                    <ul id="tree-container" class="tree-root"></ul>
-                </div>
-            </div>
-        </div>
         <div class="page">
             <header>
                 <div class="header-text">
@@ -142,15 +127,9 @@
             const resultsBody = document.getElementById("results");
             const matchCount = document.getElementById("match-count");
             const filterSummary = document.getElementById("filter-summary");
-            const treeSidebar = document.getElementById("tree-sidebar");
-            const treeContainer = document.getElementById("tree-container");
-            const sidebarHandle = document.getElementById("sidebar-handle");
-            const sidebarClose = document.getElementById("sidebar-close");
             let fieldData = [];
             let dataLoaded = false;
             let loading = false;
-            let treeBuilt = false;
-            let activeTreeRow = null;
 
             const filters = {
                 field: document.getElementById("filter-field"),
@@ -168,95 +147,9 @@
 
             const escapeHtml = (str = "") => str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
-            const toggleSidebar = (forceOpen) => {
-                if (!treeSidebar) return;
-                const isOpen = treeSidebar.classList.contains("open");
-                const next = typeof forceOpen === "boolean" ? forceOpen : !isOpen;
-                treeSidebar.classList.toggle("open", next);
-                treeSidebar.classList.toggle("collapsed", !next);
-            };
-
             const formatEnum = (values) => {
                 if (!Array.isArray(values) || values.length === 0) return '<span class="muted">-</span>';
                 return `<span class="enum-list">${values.map((v) => `<span class="enum-item">${escapeHtml(String(v))}</span>`).join("")}</span>`;
-            };
-
-            const buildTreeData = (data = []) => {
-                const root = { name: "root", key: "root", children: [] };
-                const map = new Map();
-                map.set("root", root);
-
-                const ensurePathNode = (parts = []) => {
-                    let parent = root;
-                    const pathParts = [];
-                    parts.forEach((part) => {
-                        pathParts.push(part);
-                        const key = pathParts.join(".");
-                        if (!map.has(key)) {
-                            const node = { name: part, key, children: [] };
-                            map.set(key, node);
-                            parent.children.push(node);
-                        }
-                        parent = map.get(key);
-                    });
-                    return parent;
-                };
-
-                data.forEach((item) => {
-                    const modelParts = (item.model || "").split(".").filter(Boolean);
-                    const parentNode = ensurePathNode(modelParts);
-                    const fieldParts = [...modelParts, item.field].filter(Boolean);
-                    if (!fieldParts.length) return;
-                    const fieldKey = fieldParts.join(".");
-                    if (!map.has(fieldKey)) {
-                        const fieldNode = { name: item.field, key: fieldKey, children: [] };
-                        map.set(fieldKey, fieldNode);
-                        parentNode.children.push(fieldNode);
-                    }
-                    const node = map.get(fieldKey);
-                    node.isField = true;
-                });
-                return root;
-            };
-
-            const createTreeNode = (node, depth = 0) => {
-                const hasChildren = Array.isArray(node.children) && node.children.length > 0;
-                const li = document.createElement("li");
-                li.className = "tree-item";
-                if (hasChildren) {
-                    li.classList.add("collapsible");
-                    li.classList.add(depth === 0 ? "expanded" : "collapsed");
-                } else {
-                    li.classList.add("leaf");
-                }
-
-                const row = document.createElement("div");
-                row.className = "tree-row";
-                row.style.setProperty("--depth", depth);
-                row.innerHTML = `
-                    <span class="tree-caret">${hasChildren ? "›" : "•"}</span>
-                    <span class="tree-label">${escapeHtml(node.name)}</span>
-                `;
-                li.appendChild(row);
-
-                if (hasChildren) {
-                    const ul = document.createElement("ul");
-                    ul.className = "tree-children";
-                    node.children.forEach((child) => ul.appendChild(createTreeNode(child, depth + 1)));
-                    li.appendChild(ul);
-                }
-
-                return li;
-            };
-
-            const renderTreeSidebar = () => {
-                if (!treeContainer || !fieldData.length) return;
-                const tree = buildTreeData(fieldData);
-                treeContainer.innerHTML = "";
-                tree.children.forEach((child) => {
-                    treeContainer.appendChild(createTreeNode(child, 0));
-                });
-                treeBuilt = true;
             };
 
             // Tooltip helpers
@@ -420,13 +313,7 @@
             };
 
             const ensureData = async () => {
-                if (dataLoaded) {
-                    if (!treeBuilt) {
-                        renderTreeSidebar();
-                    }
-                    return;
-                }
-                if (loading) return;
+                if (dataLoaded || loading) return;
                 loading = true;
                 matchCount.textContent = "讀取資料中...";
                 try {
@@ -436,7 +323,6 @@
                     fieldData = await res.json();
                     dataLoaded = true;
                     matchCount.textContent = "資料已載入，請輸入關鍵字";
-                    renderTreeSidebar();
                 } catch (err) {
                     resultsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--type-color-object);">無法讀取 parsed_fields_filtered.json：${escapeHtml(
                         err.message
@@ -484,34 +370,6 @@
                 }
             });
             window.addEventListener("scroll", hideTooltip);
-
-            treeContainer?.addEventListener("click", (event) => {
-                const row = event.target.closest(".tree-row");
-                if (!row) return;
-                const item = row.parentElement;
-                if (item?.classList.contains("collapsible")) {
-                    item.classList.toggle("expanded");
-                    item.classList.toggle("collapsed");
-                }
-                if (activeTreeRow && activeTreeRow !== row) {
-                    activeTreeRow.classList.remove("selected");
-                }
-                row.classList.add("selected");
-                activeTreeRow = row;
-            });
-
-            sidebarHandle?.addEventListener("click", async () => {
-                toggleSidebar(!treeSidebar.classList.contains("open"));
-                await ensureData();
-            });
-
-            sidebarClose?.addEventListener("click", () => toggleSidebar(false));
-            document.addEventListener("click", (event) => {
-                if (!treeSidebar?.classList.contains("open")) return;
-                const target = event.target;
-                if (treeSidebar.contains(target)) return;
-                toggleSidebar(false);
-            });
 
             const collectTerms = () => ({
                 field: filters.field.value.trim(),
