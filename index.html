@@ -5,534 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Shipping Instructions 查詢 - Pro</title>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
-        <style>
-            /* =========================================================================
-            * 1. 顏色變數與深色模式 (Dark Mode)
-            * ========================================================================= */
-            :root {
-                /* Light Mode Base Colors */
-                --bg1: #f7f9fc;
-                --bg2: #eef1f6;
-                --card: #ffffff;
-                --stroke: #e2e8f0;
-                --text: #1e293b;
-                --muted: #64748b;
-                --accent: #3b82f6; /* Blue */
-                --accent-glow: rgba(59, 130, 246, 0.4);
-                --shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
-
-                /* New Semantic Colors (Light Mode) */
-                --model-color: #0c4a6e; /* Dark Cyan/Blue */
-                --type-color-string: #059669; /* Emerald Green */
-                --type-color-number: #ea580c; /* Orange */
-                --type-color-boolean: #c026d3; /* Magenta */
-                --type-color-array: #1d4ed8; /* Dark Blue */
-                --type-color-object: #be123c; /* Red */
-                --required-color: #3b82f6; /* Accent Blue */
-                --enum-bg: #e0f2fe; /* Light Blue */
-                --enum-text: #075985; /* Darker Blue */
-
-                /* Dark Mode Toggle */
-                --toggle-bg: #cbd5e1;
-                --toggle-handle: #ffffff;
-            }
-
-            [data-theme="dark"] {
-                /* Dark Mode Base Colors */
-                --bg1: #0f172a;
-                --bg2: #1e293b;
-                --card: #2d3748;
-                --stroke: #4a5568;
-                --text: #f8fafc;
-                --muted: #94a3b8;
-                --accent: #60a5fa; /* Lighter Blue */
-                --accent-glow: rgba(96, 165, 250, 0.4);
-                --shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
-
-                /* New Semantic Colors (Dark Mode) */
-                --model-color: #90e0ef; /* Light Cyan */
-                --type-color-string: #6ee7b7; /* Lighter Green */
-                --type-color-number: #fdba74; /* Lighter Orange */
-                --type-color-boolean: #f0abfc; /* Lighter Magenta */
-                --type-color-array: #93c5fd; /* Lighter Dark Blue */
-                --type-color-object: #f87171; /* Lighter Red */
-                --required-color: #60a5fa; /* Accent Blue */
-                --enum-bg: #1e3a8a; /* Dark Blue */
-                --enum-text: #93c5fd; /* Light Blue */
-
-                --toggle-bg: #4a5568;
-                --toggle-handle: #1e293b;
-            }
-
-            /* =========================================================================
-            * 2. 基本樣式與排版
-            * ========================================================================= */
-            * {
-                box-sizing: border-box;
-            }
-
-            body {
-                margin: 0;
-                min-height: 100vh;
-                color: var(--text);
-                background-color: var(--bg1);
-                background-image: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
-                font-family: "Inter", "Noto Sans TC", system-ui, -apple-system, sans-serif;
-                padding: 32px 16px 60px;
-                transition: background-color 0.3s ease, color 0.3s ease;
-            }
-
-            .page {
-                max-width: 1200px;
-                margin: 0 auto;
-                position: relative;
-            }
-
-            header {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                margin-bottom: 24px;
-            }
-
-            .header-text {
-                display: grid;
-                gap: 8px;
-            }
-
-            h1 {
-                margin: 0;
-                font-size: 32px;
-                letter-spacing: -0.02em;
-                font-weight: 800;
-            }
-            .lead {
-                margin: 0;
-                color: var(--muted);
-                font-size: 16px;
-            }
-
-            /* =========================================================================
-            * 3. Dark Mode 切換開關
-            * ========================================================================= */
-            .dark-mode-toggle {
-                cursor: pointer;
-                width: 56px;
-                height: 32px;
-                background: var(--toggle-bg);
-                border-radius: 16px;
-                position: relative;
-                transition: background 0.3s;
-                margin-left: 16px;
-                flex-shrink: 0;
-                border: 1px solid var(--stroke);
-            }
-
-            .dark-mode-toggle::after {
-                content: "";
-                position: absolute;
-                top: 3px;
-                left: 3px;
-                width: 24px;
-                height: 24px;
-                background: var(--toggle-handle);
-                border-radius: 50%;
-                transition: transform 0.3s ease, background 0.3s;
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-            }
-
-            [data-theme="dark"] .dark-mode-toggle::after {
-                transform: translateX(24px);
-            }
-
-            .toggle-wrapper {
-                display: inline-flex;
-                align-items: center;
-                gap: 10px;
-                color: var(--muted);
-                font-size: 13px;
-                font-weight: 600;
-                white-space: nowrap;
-            }
-
-            /* =========================================================================
-            * 4. 工具欄與過濾器 (Toolbar & Filters)
-            * ========================================================================= */
-            .toolbar {
-                padding: 24px;
-                background: var(--card);
-                border-radius: 16px;
-                box-shadow: var(--shadow);
-                margin-bottom: 32px;
-                border: 1px solid var(--stroke);
-            }
-
-            .filters {
-                display: grid;
-                gap: 16px;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                margin-bottom: 20px;
-            }
-
-            .field {
-                display: grid;
-                gap: 6px;
-            }
-
-            .field span {
-                font-size: 11px;
-                color: var(--muted);
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
-                font-weight: 600;
-            }
-
-            .field input {
-                width: 100%;
-                border: 1px solid var(--stroke);
-                background: var(--bg1);
-                color: var(--text);
-                font-size: 15px;
-                outline: none;
-                padding: 10px 14px;
-                border-radius: 10px;
-                transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-            }
-
-            .field input:focus {
-                border-color: var(--accent);
-                background: var(--card);
-                box-shadow: 0 0 0 3px var(--accent-glow);
-            }
-
-            .actions {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 12px;
-                align-items: center;
-                margin-bottom: 20px;
-            }
-
-            .filter-summary {
-                margin: 6px 0 12px;
-                font-size: 13px;
-                color: var(--accent);
-                font-weight: 700;
-            }
-
-            .summary-chip {
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                padding: 4px 10px;
-                border-radius: 999px;
-                background: rgba(59, 130, 246, 0.12);
-                color: var(--text);
-                border: 1px solid rgba(59, 130, 246, 0.3);
-                font-weight: 600;
-            }
-
-            /* =========================================================================
-            * 5. 按鈕 (Buttons)
-            * ========================================================================= */
-            button {
-                border: 1px solid var(--stroke);
-                background: var(--card);
-                color: var(--text);
-                border-radius: 10px;
-                padding: 10px 18px;
-                font-size: 14px;
-                cursor: pointer;
-                font-weight: 600;
-                transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-            }
-
-            button:hover {
-                transform: translateY(-2px);
-                box-shadow: var(--shadow);
-            }
-
-            button.primary {
-                background: var(--accent);
-                border: none;
-                color: #ffffff;
-                font-weight: 700;
-                position: relative;
-                overflow: hidden;
-                box-shadow: 0 6px 18px var(--accent-glow);
-            }
-
-            /* Primary Button Glow Effect */
-            button.primary::after {
-                content: "";
-                position: absolute;
-                top: -50%;
-                left: -50%;
-                width: 200%;
-                height: 200%;
-                background: rgba(255, 255, 255, 0.1);
-                transform: rotate(45deg);
-                transition: all 0.5s ease;
-                opacity: 0;
-            }
-
-            button.primary:hover::after {
-                left: 100%;
-                opacity: 1;
-            }
-
-            /* =========================================================================
-            * 6. 元資訊與備註 (Meta & Note)
-            * ========================================================================= */
-            .meta {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 12px;
-                align-items: center;
-                color: var(--muted);
-                font-size: 14px;
-            }
-
-            .pill {
-                display: inline-flex;
-                gap: 8px;
-                align-items: center;
-                padding: 8px 14px;
-                border-radius: 999px;
-                border: 1px solid var(--stroke);
-                background: var(--bg2);
-                color: var(--text);
-                font-weight: 600;
-                font-size: 13px;
-            }
-
-            .status-dot {
-                width: 10px;
-                height: 10px;
-                border-radius: 50%;
-                display: inline-block;
-                background: var(--accent);
-                transition: background 0.3s;
-            }
-
-            /* =========================================================================
-            * 7. 表格樣式 (Table)
-            * ========================================================================= */
-            table {
-                width: 100%;
-                border-collapse: separate;
-                border-spacing: 0;
-                background: var(--card);
-                border: 1px solid var(--stroke);
-                border-radius: 16px;
-                overflow: hidden;
-                box-shadow: var(--shadow);
-            }
-
-            thead {
-                background: var(--bg2);
-                transition: background 0.3s;
-            }
-
-            th,
-            td {
-                padding: 14px 18px;
-                text-align: left;
-                border-bottom: 1px solid var(--stroke);
-                font-size: 14px;
-                vertical-align: middle;
-                transition: border-color 0.3s;
-            }
-
-            th {
-                color: var(--text);
-                font-weight: 700;
-                white-space: nowrap;
-            }
-
-            tbody tr:last-child td {
-                border-bottom: none;
-            }
-
-            tbody tr:hover {
-                background: var(--bg2);
-                transition: background 0.2s ease;
-            }
-
-            .muted {
-                color: var(--muted);
-            }
-
-            /* 新增：欄位值的樣式容器 */
-            .field-value {
-                font-weight: 600;
-                color: var(--text);
-            }
-
-            /* =========================================================================
-            * 8. 標籤與徽章 (Badges)
-            * ========================================================================= */
-            .badge {
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                padding: 5px 12px;
-                border-radius: 999px;
-                font-size: 12px;
-                font-weight: 700;
-                border: 1px solid transparent;
-                white-space: nowrap;
-            }
-
-            .required {
-                background: #dbeafe; /* Blue-50 */
-                color: #1e40af; /* Blue-800 */
-                border-color: #93c5fd; /* Blue-300 */
-            }
-            [data-theme="dark"] .required {
-                background: rgba(59, 130, 246, 0.2);
-                color: #93c5fd;
-                border-color: rgba(59, 130, 246, 0.4);
-            }
-
-            .optional {
-                background: #f3f4f6; /* Gray-100 */
-                color: #4b5563; /* Gray-700 */
-                border-color: #e5e7eb; /* Gray-200 */
-            }
-            [data-theme="dark"] .optional {
-                background: rgba(148, 163, 184, 0.2);
-                color: #cbd5e1;
-                border-color: rgba(148, 163, 184, 0.4);
-            }
-
-            .model-chip {
-                display: inline-flex;
-                align-items: center;
-                padding: 4px 10px;
-                border-radius: 10px;
-                background: rgba(79, 156, 249, 0.12);
-                color: var(--model-color); /* 使用新的 Model 顏色 */
-                border: 1px solid rgba(79, 156, 249, 0.3);
-                font-weight: 700;
-                font-size: 12px;
-                white-space: nowrap;
-            }
-
-            /* =========================================================================
-            * 9. 程式碼與列舉值 (Code & Enum)
-            * ========================================================================= */
-            .enum-list {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 6px;
-                max-width: 300px;
-            }
-
-            .enum-item {
-                padding: 4px 10px;
-                border-radius: 8px;
-                background: var(--enum-bg); /* 使用新的 Enum 背景色 */
-                color: var(--enum-text); /* 使用新的 Enum 文字色 */
-                border: 1px solid var(--stroke);
-                font-size: 11px;
-                font-weight: 600;
-                white-space: nowrap;
-            }
-
-            code {
-                background: var(--bg2);
-                padding: 3px 8px;
-                border-radius: 6px;
-                font-family: monospace;
-                font-size: 13px;
-                color: var(--text);
-                border: 1px solid var(--stroke); /* 程式碼塊增加邊框 */
-            }
-
-            .nowrap {
-                white-space: nowrap;
-            }
-
-            /* 新增：依 Type 區分文字顏色 */
-            .field-type-string {
-                color: var(--type-color-string);
-                font-weight: 700;
-            }
-            .field-type-number,
-            .field-type-integer {
-                color: var(--type-color-number);
-                font-weight: 700;
-            }
-            .field-type-boolean {
-                color: var(--type-color-boolean);
-                font-weight: 700;
-            }
-            .field-type-array {
-                color: var(--type-color-array);
-                font-weight: 700;
-            }
-            .field-type-object {
-                color: var(--type-color-object);
-                font-weight: 700;
-            }
-
-            /* 新增：Description/中文說明 的文字顏色與樣式 */
-            .field-description {
-                font-weight: 500;
-            }
-            .field-zh-description {
-                color: var(--muted);
-                font-size: 13px;
-            }
-
-            /* =========================================================================
-            * 10. RWD 適應性 (Media Queries)
-            * ========================================================================= */
-            @media (max-width: 1024px) {
-                h1 {
-                    font-size: 28px;
-                }
-                .toolbar {
-                    padding: 20px;
-                }
-                .filters {
-                    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-                }
-                th,
-                td {
-                    padding: 12px 14px;
-                    font-size: 13px;
-                }
-            }
-
-            @media (max-width: 768px) {
-                body {
-                    padding: 16px 12px 32px;
-                }
-                header {
-                    flex-direction: column;
-                    align-items: stretch;
-                }
-                .dark-mode-toggle {
-                    margin-top: 10px;
-                }
-                .toolbar {
-                    margin-bottom: 24px;
-                }
-                table {
-                    display: block;
-                    overflow-x: auto;
-                    border-radius: 12px;
-                    width: 100%;
-                    white-space: nowrap;
-                }
-                th,
-                td {
-                    min-width: 120px;
-                }
-            }
-        </style>
+        <link rel="stylesheet" href="./index.css" />
     </head>
     <body data-theme="light">
         <div class="page">
@@ -555,7 +28,15 @@
                     </label>
                     <label class="field">
                         <span>Type</span>
-                        <input id="filter-type" type="search" placeholder="string / boolean / array" autocomplete="off" />
+                        <select id="filter-type">
+                            <option value="">(any)</option>
+                            <option value="string">string</option>
+                            <option value="boolean">boolean</option>
+                            <option value="int">int</option>
+                            <option value="float">float</option>
+                            <option value="array">array</option>
+                            <option value="object">object</option>
+                        </select>
                     </label>
                     <!-- <label class="field">
                         <span>Description (含中文)</span>
@@ -563,7 +44,11 @@
                     </label> -->
                     <label class="field">
                         <span>Required</span>
-                        <input id="filter-required" type="search" placeholder="true / false / 必填 / 選填" autocomplete="off" />
+                        <select id="filter-required">
+                            <option value="">(any)</option>
+                            <option value="必填">必填</option>
+                            <option value="選填">選填</option>
+                        </select>
                     </label>
                     <label class="field">
                         <span>Enum</span>
@@ -590,6 +75,7 @@
                         <th>Model</th>
                         <th>Field</th>
                         <th>Type</th>
+                        <th>Member</th>
                         <!-- <th>Description</th>
                         <th>中文說明</th> -->
                         <th>Required</th>
@@ -599,6 +85,7 @@
                 </thead>
                 <tbody id="results"></tbody>
             </table>
+            <div id="tooltip" class="tooltip hidden"></div>
         </div>
 
         <script>
@@ -650,47 +137,6 @@
                 enum: document.getElementById("filter-enum"),
             };
 
-            // 翻譯字典 (保留)
-            const dict = [
-                ["shipping instructions", "提單資料"],
-                ["transport document", "運輸文件"],
-                ["bill of lading", "提單"],
-                ["sea waybill", "海運提單"],
-                ["identifier", "識別碼"],
-                ["reference", "參考碼"],
-                ["code", "代碼"],
-                ["description", "說明"],
-                ["required", "必填"],
-                ["optional", "選填"],
-                ["string", "文字"],
-                ["integer", "整數"],
-                ["number", "數值"],
-                ["boolean", "布林"],
-                ["array", "陣列"],
-                ["object", "物件"],
-                ["carrier", "船公司"],
-                ["location", "地點"],
-                ["country", "國家"],
-                ["city", "城市"],
-                ["address", "地址"],
-                ["email", "電子郵件"],
-                ["phone", "電話"],
-                ["date", "日期"],
-                ["time", "時間"],
-                ["status", "狀態"],
-                ["approval", "核准"],
-                ["party", "相關方"],
-                ["contact", "聯絡人"],
-                ["vessel", "船名"],
-                ["voyage", "航次"],
-                ["name", "名稱"],
-                ["cargo", "貨物"],
-                ["container", "貨櫃"],
-                ["quantity", "數量"],
-                ["weight", "重量"],
-                ["volume", "體積"],
-            ];
-
             const translateToZh = (text = "") => {
                 // 這裡應該是實際的翻譯邏輯，但由於無法存取外部資源，暫時保持原樣或簡單處理
                 return text && text.trim() ? text : "(no description)";
@@ -703,43 +149,124 @@
                 return `<span class="enum-list">${values.map((v) => `<span class="enum-item">${escapeHtml(String(v))}</span>`).join("")}</span>`;
             };
 
+            // Tooltip helpers
+            const tooltipEl = document.getElementById("tooltip");
+            const hideTooltip = () => {
+                tooltipEl.classList.add("hidden");
+            };
+            const showTooltip = (html, x, y) => {
+                tooltipEl.innerHTML = html;
+                tooltipEl.classList.remove("hidden");
+                // Position near the cursor with viewport bounds
+                const padding = 12;
+                const { offsetWidth, offsetHeight } = tooltipEl;
+                let left = x + 12;
+                let top = y + 12;
+                const maxLeft = window.innerWidth - offsetWidth - padding;
+                const maxTop = window.innerHeight - offsetHeight - padding;
+                if (left > maxLeft) left = maxLeft;
+                if (top > maxTop) top = maxTop;
+                tooltipEl.style.left = `${Math.max(padding, left)}px`;
+                tooltipEl.style.top = `${Math.max(padding, top)}px`;
+            };
+
+            const copyToClipboard = async (text, target) => {
+                if (!text) return;
+                let success = false;
+                if (navigator.clipboard?.writeText) {
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        success = true;
+                    } catch (err) {
+                        console.warn("Clipboard write failed", err);
+                    }
+                }
+                if (!success) {
+                    const textarea = document.createElement("textarea");
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand("copy");
+                    } catch (err) {
+                        console.warn("Fallback copy failed", err);
+                    }
+                    document.body.removeChild(textarea);
+                }
+                if (target) {
+                    const rect = target.getBoundingClientRect();
+                    showTooltip(`<strong>Copied</strong><p>${escapeHtml(text)}</p>`, rect.right, rect.top);
+                    setTimeout(hideTooltip, 1000);
+                }
+            };
+
             const renderRows = (rows) => {
                 resultsBody.innerHTML = rows
                     .map((item) => {
                         const zh = translateToZh(item.description || "");
                         const exampleHtml = item.example !== null && item.example !== undefined ? `<code>${escapeHtml(String(item.example))}</code>` : '<span class="muted">-</span>';
-                        const requiredBadge = item.required ? '<span class="badge required">必填</span>' : '<span class="badge optional">選填</span>';
+                        const requiredBadge = item.required ? "<span class=\"badge required\">Required</span>" : "<span class=\"badge optional\">Optional</span>";
 
-                        // 針對 Type 欄位，增加動態類別
                         const typeClass = item.type ? `field-type-${String(item.type).toLowerCase()}` : "muted";
+                        const memberButton = item.member
+                            ? `<button class="member-button" type="button" data-model="${escapeHtml(item.model || "")}" data-field="${escapeHtml(item.field || "")}" data-member="${escapeHtml(String(item.member))}">${escapeHtml(String(item.member))}</button>`
+                            : '<span class="muted">-</span>';
+                        const modelCell = item.model
+                            ? `<div class="inline-copy"><span class="model-chip field-model">${escapeHtml(item.model)}</span><button class="copy-btn" type="button" data-copy="${escapeHtml(item.model)}" aria-label="Copy model">📋</button></div>`
+                            : '<span class="muted">-</span>';
+                        const fieldCell = `
+                            <div class="inline-copy">
+                                <button class="field-tooltip" type="button" data-desc="${escapeHtml(item.description || "")}" data-desc-zh="${escapeHtml(item.description_zh || "")}">${escapeHtml(item.field || "")}</button>
+                                <button class="copy-btn" type="button" data-copy="${escapeHtml(item.field || "")}" aria-label="Copy field">📋</button>
+                            </div>`;
                         return `
                         <tr>
-                            <td class="nowrap">${item.model ? `<span class="model-chip field-model">${escapeHtml(item.model)}</span>` : '<span class="muted">-</span>'}</td>
-                            <td class="nowrap"><span class="field-value">${escapeHtml(item.field || "")}</span></td>
+                            <td class="nowrap">${modelCell}</td>
+                            <td class="nowrap">${fieldCell}</td>
                             <td class="nowrap"><span class="field-value ${typeClass}">${escapeHtml(item.type || "")}</span></td>
+                            <td class="nowrap">${memberButton}</td>
                             <td class="nowrap field-required">${requiredBadge}</td>
                             <td>${formatEnum(item.enum)}</td>
                         </tr>
                     `;
-                        //     return `
-                        //     <tr>
-                        //         <td class="nowrap">${item.model ? `<span class="model-chip field-model">${escapeHtml(item.model)}</span>` : '<span class="muted">-</span>'}</td>
-                        //         <td class="nowrap"><span class="field-value">${escapeHtml(item.field || "")}</span></td>
-                        //         <td class="nowrap"><span class="field-value ${typeClass}">${escapeHtml(item.type || "")}</span></td>
-                        //         <td><span class="field-value field-description">${escapeHtml(item.description || "")}</span></td>
-                        //         <td><span class="field-value field-zh-description">${zh}</span></td>
-                        //         <td class="nowrap field-required">${requiredBadge}</td>
-                        //         <td>${exampleHtml}</td>
-                        //         <td>${formatEnum(item.enum)}</td>
-                        //     </tr>
-                        // `;
                     })
                     .join("");
-                matchCount.textContent = `${rows.length} 筆符合條件`;
+                matchCount.textContent = `${rows.length} matches`;
+            };
+
+            const buildDescriptionTooltip = (desc = "", descZh = "") => {
+                const safeDesc = desc && desc.trim() ? escapeHtml(desc).replace(/\n/g, "<br>") : "(no description)";
+                const safeZh = descZh && descZh.trim() ? escapeHtml(descZh).replace(/\n/g, "<br>") : "(\u7121\u8AAA\u660E)";
+                return `
+                    <div>
+                        <strong>Description</strong>
+                        <p>${safeDesc}</p>
+                        <strong>&#20013;&#25991;&#35498;&#26126;</strong>
+                        <p>${safeZh}</p>
+                    </div>
+                `;
+            };
+            const buildMemberTooltip = (model, field) => {
+                if (!model || !field) return "";
+                const targetModel = `${model}.${field}`;
+                const children = (fieldData || []).filter((row) => row.model === targetModel);
+                if (!children.length) return "";
+                const items = children
+                    .map(
+                        (c) =>
+                            `<li>${escapeHtml(c.field || "")} | <span class="field-value field-type-${String(c.type || "").toLowerCase()}">${escapeHtml(c.type || "")}</span></li>`
+                    )
+                    .join("");
+                return `
+                    <div>
+                        <strong>${escapeHtml(targetModel)}</strong>
+                        <ul>${items}</ul>
+                    </div>
+                `;
             };
 
             const fuzzyIncludes = (value, term) => (value ?? "").toString().toLowerCase().includes(term.toLowerCase());
-            const requiredLabel = (val) => (val ? "true required yes 必填 需要" : "false optional no 選填 不需要");
+            const requiredLabel = (val) => (val ? "true required yes 必填 必要" : "false optional no 選填 不必要");
 
             const filterRows = (terms) =>
                 fieldData.filter((item) => {
@@ -777,37 +304,73 @@
             };
 
             const renderPlaceholder = (message) => {
-                resultsBody.innerHTML = `<tr><td colspan="8" class="muted" style="text-align: center; padding: 30px;">${escapeHtml(message)}</td></tr>`;
+                resultsBody.innerHTML = `<tr><td colspan="6" class="muted" style="text-align: center; padding: 30px;">${escapeHtml(message)}</td></tr>`;
             };
 
             const ensureData = async () => {
                 if (dataLoaded || loading) return;
                 loading = true;
-                matchCount.textContent = "載入資料中...";
+                matchCount.textContent = "讀取資料中...";
                 try {
-                    // 模擬載入資料，您需要確保 parsed_fields_filtered.json 存在於正確的路徑
                     const url = new URL("parsed_fields_filtered.json", window.location.href);
                     const res = await fetch(url);
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     fieldData = await res.json();
                     dataLoaded = true;
-                    matchCount.textContent = "資料已載入，請輸入條件";
+                    matchCount.textContent = "資料已載入，請輸入關鍵字";
                 } catch (err) {
-                    resultsBody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--type-color-object);">無法讀取 parsed_fields_filtered.json：${escapeHtml(
+                    resultsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--type-color-object);">無法讀取 parsed_fields_filtered.json：${escapeHtml(
                         err.message
-                    )}。請檢查檔案路徑。</td></tr>`;
-                    matchCount.textContent = "讀取檔案失敗";
+                    )}。請檢查檔案位置。</td></tr>`;
+                    matchCount.textContent = "讀取失敗";
                     console.error(err);
                 } finally {
                     loading = false;
                 }
             };
 
+            resultsBody.addEventListener("click", async (event) => {
+                const copyBtn = event.target.closest(".copy-btn");
+                const fieldBtn = event.target.closest(".field-tooltip");
+                const memberBtn = event.target.closest(".member-button");
+
+                if (copyBtn) {
+                    await copyToClipboard(copyBtn.dataset.copy || "", copyBtn);
+                    event.stopPropagation();
+                    return;
+                }
+
+                if (fieldBtn) {
+                    const html = buildDescriptionTooltip(fieldBtn.dataset.desc || "", fieldBtn.dataset.descZh || "");
+                    showTooltip(html, event.clientX, event.clientY);
+                    event.stopPropagation();
+                    return;
+                }
+
+                if (memberBtn) {
+                    await ensureData();
+                    const html = buildMemberTooltip(memberBtn.dataset.model, memberBtn.dataset.field);
+                    if (html) {
+                        showTooltip(html, event.clientX, event.clientY);
+                    } else {
+                        hideTooltip();
+                    }
+                    event.stopPropagation();
+                }
+            });
+
+            document.addEventListener("click", (event) => {
+                if (!event.target.closest(".field-tooltip") && !event.target.closest(".member-button") && !event.target.closest("#tooltip")) {
+                    hideTooltip();
+                }
+            });
+            window.addEventListener("scroll", hideTooltip);
+
             const collectTerms = () => ({
                 field: filters.field.value.trim(),
-                type: filters.type.value.trim(),
+                type: filters.type.value,
                 // description: filters.description.value.trim(),
-                required: filters.required.value.trim(),
+                required: filters.required.value,
                 // example: filters.example.value.trim(),
                 enum: filters.enum.value.trim(),
             });
