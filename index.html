@@ -64,7 +64,10 @@
                     <button id="reset-button" type="button">清除條件</button>
                 </div>
                 <div class="meta">
-                    <span class="pill"><span class="status-dot"></span><span id="match-count">尚未查詢</span></span>
+                    <span class="pill">
+                        <span class="status-dot"></span>
+                        <span id="match-count">尚未查詢</span>
+                    </span>
                 </div>
                 <div class="filter-summary" id="filter-summary">目前條件：無。</div>
             </div>
@@ -205,18 +208,24 @@
                     .map((item) => {
                         const zh = translateToZh(item.description || "");
                         const exampleHtml = item.example !== null && item.example !== undefined ? `<code>${escapeHtml(String(item.example))}</code>` : '<span class="muted">-</span>';
-                        const requiredBadge = item.required ? "<span class=\"badge required\">Required</span>" : "<span class=\"badge optional\">Optional</span>";
+                        const requiredBadge = item.required ? '<span class="badge required">必填</span>' : '<span class="badge optional">選填</span>';
 
                         const typeClass = item.type ? `field-type-${String(item.type).toLowerCase()}` : "muted";
                         const memberButton = item.member
-                            ? `<button class="member-button" type="button" data-model="${escapeHtml(item.model || "")}" data-field="${escapeHtml(item.field || "")}" data-member="${escapeHtml(String(item.member))}">${escapeHtml(String(item.member))}</button>`
+                            ? `<button class="member-button" type="button" data-model="${escapeHtml(item.model || "")}" data-field="${escapeHtml(item.field || "")}" data-member="${escapeHtml(
+                                  String(item.member)
+                              )}">${escapeHtml(String(item.member))}</button>`
                             : '<span class="muted">-</span>';
                         const modelCell = item.model
-                            ? `<div class="inline-copy"><span class="model-chip field-model">${escapeHtml(item.model)}</span><button class="copy-btn" type="button" data-copy="${escapeHtml(item.model)}" aria-label="Copy model">📋</button></div>`
+                            ? `<div class="inline-copy"><span class="model-chip field-model">${escapeHtml(item.model)}</span><button class="copy-btn" type="button" data-copy="${escapeHtml(
+                                  item.model
+                              )}" aria-label="Copy model">📋</button></div>`
                             : '<span class="muted">-</span>';
                         const fieldCell = `
                             <div class="inline-copy">
-                                <button class="field-tooltip" type="button" data-desc="${escapeHtml(item.description || "")}" data-desc-zh="${escapeHtml(item.description_zh || "")}">${escapeHtml(item.field || "")}</button>
+                                <button class="field-tooltip" type="button" data-desc="${escapeHtml(item.description || "")}" data-desc-zh="${escapeHtml(item.description_zh || "")}">${escapeHtml(
+                            item.field || ""
+                        )}</button>
                                 <button class="copy-btn" type="button" data-copy="${escapeHtml(item.field || "")}" aria-label="Copy field">📋</button>
                             </div>`;
                         return `
@@ -252,10 +261,7 @@
                 const children = (fieldData || []).filter((row) => row.model === targetModel);
                 if (!children.length) return "";
                 const items = children
-                    .map(
-                        (c) =>
-                            `<li>${escapeHtml(c.field || "")} | <span class="field-value field-type-${String(c.type || "").toLowerCase()}">${escapeHtml(c.type || "")}</span></li>`
-                    )
+                    .map((c) => `<li>${escapeHtml(c.field || "")} | <span class="field-value field-type-${String(c.type || "").toLowerCase()}">${escapeHtml(c.type || "")}</span></li>`)
                     .join("");
                 return `
                     <div>
@@ -273,7 +279,6 @@
                     const itemDescription = item.description || "";
                     const itemZhDescription = translateToZh(itemDescription);
                     const itemEnum = (item.enum || []).join(", ");
-
                     return (
                         (!terms.field || fuzzyIncludes(item.field, terms.field)) &&
                         (!terms.type || fuzzyIncludes(item.type, terms.type)) &&
@@ -390,6 +395,7 @@
                 }
 
                 const rows = filterRows(terms);
+
                 filterSummary.innerHTML = formatSummary(terms);
                 if (rows.length === 0) {
                     renderPlaceholder("No data found. Try adjusting keywords.");
