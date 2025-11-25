@@ -3091,26 +3091,26 @@
   {
     "model": "CreateShippingInstructions.consignmentItems.cargoItems.exportLicense",
     "field": "issueDate",
-    "type": "object",
+    "type": "string",
     "required": false,
     "description": "Issue date of the `Export License`.\n",
     "example": "2024-09-14",
     "enum": null,
     "parent": "CreateShippingInstructions.consignmentItems.cargoItems.exportLicense",
     "description_zh": "\u201c\u51fa\u53e3\u8a31\u53ef\u8b49\u201d\u7684\u7c3d\u767c\u65e5\u671f\u3002",
-    "member": "string(date)"
+    "member": "string"
   },
   {
     "model": "CreateShippingInstructions.consignmentItems.cargoItems.exportLicense",
     "field": "expiryDate",
-    "type": "object",
+    "type": "string",
     "required": false,
     "description": "Expiry date of the `Export License`.\n",
     "example": "2024-09-21",
     "enum": null,
     "parent": "CreateShippingInstructions.consignmentItems.cargoItems.exportLicense",
     "description_zh": "\u201c\u51fa\u53e3\u8a31\u53ef\u8b49\u201d\u7684\u5230\u671f\u65e5\u671f\u3002",
-    "member": "string(date)"
+    "member": "string"
   },
   {
     "model": "CreateShippingInstructions.consignmentItems.cargoItems",
@@ -3151,26 +3151,26 @@
   {
     "model": "CreateShippingInstructions.consignmentItems.cargoItems.importLicense",
     "field": "issueDate",
-    "type": "object",
+    "type": "string",
     "required": false,
     "description": "Issue date of the `Import License`.\n",
     "example": "2024-09-14",
     "enum": null,
     "parent": "CreateShippingInstructions.consignmentItems.cargoItems.importLicense",
     "description_zh": "\u201c\u9032\u53e3\u8a31\u53ef\u8b49\u201d\u7684\u7c3d\u767c\u65e5\u671f\u3002",
-    "member": "string(date)"
+    "member": "string"
   },
   {
     "model": "CreateShippingInstructions.consignmentItems.cargoItems.importLicense",
     "field": "expiryDate",
-    "type": "object",
+    "type": "string",
     "required": false,
     "description": "Expiry date of the `Import License`.\n",
     "example": "2024-09-21",
     "enum": null,
     "parent": "CreateShippingInstructions.consignmentItems.cargoItems.importLicense",
     "description_zh": "\u201c\u9032\u53e3\u8a31\u53ef\u8b49\u201d\u7684\u5230\u671f\u65e5\u671f\u3002",
-    "member": "string(date)"
+    "member": "string"
   },
   {
     "model": "CreateShippingInstructions.consignmentItems.cargoItems",
@@ -3384,26 +3384,26 @@
   {
     "model": "CreateShippingInstructions.consignmentItems.exportLicense",
     "field": "issueDate",
-    "type": "object",
+    "type": "string",
     "required": false,
     "description": "Issue date of the `Export License`.\n",
     "example": "2024-09-14",
     "enum": null,
     "parent": "CreateShippingInstructions.consignmentItems.exportLicense",
     "description_zh": "\u201c\u51fa\u53e3\u8a31\u53ef\u8b49\u201d\u7684\u7c3d\u767c\u65e5\u671f\u3002",
-    "member": "string(date)"
+    "member": "string"
   },
   {
     "model": "CreateShippingInstructions.consignmentItems.exportLicense",
     "field": "expiryDate",
-    "type": "object",
+    "type": "string",
     "required": false,
     "description": "Expiry date of the `Export License`.\n",
     "example": "2024-09-21",
     "enum": null,
     "parent": "CreateShippingInstructions.consignmentItems.exportLicense",
     "description_zh": "\u201c\u51fa\u53e3\u8a31\u53ef\u8b49\u201d\u7684\u5230\u671f\u65e5\u671f\u3002",
-    "member": "string(date)"
+    "member": "string"
   },
   {
     "model": "CreateShippingInstructions.consignmentItems",
@@ -3444,26 +3444,26 @@
   {
     "model": "CreateShippingInstructions.consignmentItems.importLicense",
     "field": "issueDate",
-    "type": "object",
+    "type": "string",
     "required": false,
     "description": "Issue date of the `Import License`.\n",
     "example": "2024-09-14",
     "enum": null,
     "parent": "CreateShippingInstructions.consignmentItems.importLicense",
     "description_zh": "\u201c\u9032\u53e3\u8a31\u53ef\u8b49\u201d\u7684\u7c3d\u767c\u65e5\u671f\u3002",
-    "member": "string(date)"
+    "member": "string"
   },
   {
     "model": "CreateShippingInstructions.consignmentItems.importLicense",
     "field": "expiryDate",
-    "type": "object",
+    "type": "string",
     "required": false,
     "description": "Expiry date of the `Import License`.\n",
     "example": "2024-09-21",
     "enum": null,
     "parent": "CreateShippingInstructions.consignmentItems.importLicense",
     "description_zh": "\u201c\u9032\u53e3\u8a31\u53ef\u8b49\u201d\u7684\u5230\u671f\u65e5\u671f\u3002",
-    "member": "string(date)"
+    "member": "string"
   },
   {
     "model": "CreateShippingInstructions.consignmentItems",
@@ -3752,26 +3752,26 @@
   {
     "model": "CreateShippingInstructions.exportLicense",
     "field": "issueDate",
-    "type": "object",
+    "type": "string",
     "required": false,
     "description": "Issue date of the `Export License`.\n",
     "example": "2024-09-14",
     "enum": null,
     "parent": "CreateShippingInstructions.exportLicense",
     "description_zh": "\u201c\u51fa\u53e3\u8a31\u53ef\u8b49\u201d\u7684\u7c3d\u767c\u65e5\u671f\u3002",
-    "member": "string(date)"
+    "member": "string"
   },
   {
     "model": "CreateShippingInstructions.exportLicense",
     "field": "expiryDate",
-    "type": "object",
+    "type": "string",
     "required": false,
     "description": "Expiry date of the `Export License`.\n",
     "example": "2024-09-21",
     "enum": null,
     "parent": "CreateShippingInstructions.exportLicense",
     "description_zh": "\u201c\u51fa\u53e3\u8a31\u53ef\u8b49\u201d\u7684\u5230\u671f\u65e5\u671f\u3002",
-    "member": "string(date)"
+    "member": "string"
   },
   {
     "model": "CreateShippingInstructions",
@@ -3812,26 +3812,26 @@
   {
     "model": "CreateShippingInstructions.importLicense",
     "field": "issueDate",
-    "type": "object",
+    "type": "string",
     "required": false,
     "description": "Issue date of the `Import License`.\n",
     "example": "2024-09-14",
     "enum": null,
     "parent": "CreateShippingInstructions.importLicense",
     "description_zh": "\u201c\u9032\u53e3\u8a31\u53ef\u8b49\u201d\u7684\u7c3d\u767c\u65e5\u671f\u3002",
-    "member": "string(date)"
+    "member": "string"
   },
   {
     "model": "CreateShippingInstructions.importLicense",
     "field": "expiryDate",
-    "type": "object",
+    "type": "string",
     "required": false,
     "description": "Expiry date of the `Import License`.\n",
     "example": "2024-09-21",
     "enum": null,
     "parent": "CreateShippingInstructions.importLicense",
     "description_zh": "\u201c\u9032\u53e3\u8a31\u53ef\u8b49\u201d\u7684\u5230\u671f\u65e5\u671f\u3002",
-    "member": "string(date)"
+    "member": "string"
   },
   {
     "model": "CreateShippingInstructions",
