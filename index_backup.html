@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" type="image/png" href="./assets/images/favicon.png" />
+        <title>DCSA Shipping Instructions API - Pro</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" />
+        <link rel="stylesheet" href="./index.css" />
+    </head>
+    <body data-theme="light">
+        <header class="page-header">
+            <div class="header-text">
+                <h1>📦 DCSA Shipping Instructions API 3.0 欄位查詢</h1>
+            </div>
+            <div class="header-actions">
+                <div class="toggle-wrapper" aria-label="切換模式">
+                    <span aria-hidden="true">☀️</span>
+                    <div id="dark-mode-toggle" class="dark-mode-toggle" title="切換深色/淺色模式"></div>
+                    <span aria-hidden="true">⚫</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="layout" id="layout">
+            <button id="tree-toggle" class="sidebar-toggle" type="button" aria-expanded="true" aria-label="切換樹狀選單">☰</button>
+            <aside class="tree-sidebar open" id="tree-sidebar" aria-label="Model tree navigation">
+                <div class="tree-panel">
+                    <div class="tree-panel-header">
+                        <div>
+                            <p class="panel-kicker">Model Map</p>
+                        </div>
+                    </div>
+                    <div class="tree-scroll">
+                        <ul id="tree-container" class="tree-root"></ul>
+                    </div>
+                </div>
+            </aside>
+            <div class="content">
+                <div class="toolbar">
+                    <div class="filters">
+                        <label class="field">
+                            <span>Field</span>
+                            <input id="filter-field" type="search" placeholder="HSCodes" autocomplete="off" list="field-options" />
+                            <datalist id="field-options"></datalist>
+                        </label>
+                        <label class="field">
+                            <span>Type</span>
+                            <select id="filter-type">
+                                <option value="">【any】</option>
+                            </select>
+                        </label>
+                        <label class="field">
+                            <span>Required</span>
+                            <select id="filter-required">
+                                <option value="">【any】</option>
+                                <option value="必填">必填</option>
+                                <option value="選填">選填</option>
+                            </select>
+                        </label>
+                        <label class="field">
+                            <span>Enum</span>
+                            <input id="filter-enum" type="search" placeholder="PRE / COL" autocomplete="off" />
+                        </label>
+                    </div>
+                    <div class="actions">
+                        <button id="search-button" class="primary" type="button">🚀 立即查詢</button>
+                        <button id="reset-button" type="button">清除條件</button>
+                    </div>
+                    <div class="meta">
+                        <span class="pill">
+                            <span class="status-dot"></span>
+                            <span id="match-count">尚未查詢</span>
+                        </span>
+                    </div>
+                    <div class="filter-summary" id="filter-summary">目前條件：無。</div>
+                </div>
+
+                <table aria-label="Shipping instruction fields">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Props</th>
+                            <th>Required</th>
+                            <th>Enum</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results"></tbody>
+                </table>
+                <div id="tooltip" class="tooltip hidden"></div>
+            </div>
+        </div>
+
+        <!-- 嵌入客服機器人 -->
+        <!-- <script src="https://ragi.chat/modules/js/v1.0.0.js"></script>
+        <script src="./RAGi.js"></script> -->
+
+        <!-- Main Script -->
+        <script>
+            const fileName = "CreateShippingInstructions_flat_tree.json";
+            // =========================================================================
+            // 1. Dark Mode 邏輯 (保留)
+            // =========================================================================
+            const body = document.body;
+            const toggle = document.getElementById("dark-mode-toggle");
+
+            // 檢查 localStorage 或系統偏好設定
+            const getInitialTheme = () => {
+                const storedTheme = localStorage.getItem("theme");
+                if (storedTheme) {
+                    return storedTheme;
+                }
+                return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            };
+            const applyTheme = (theme) => {
+                body.setAttribute("data-theme", theme);
+                localStorage.setItem("theme", theme);
+            };
+            toggle.addEventListener("click", () => {
+                const currentTheme = body.getAttribute("data-theme");
+                const newTheme = currentTheme === "light" ? "dark" : "light";
+                applyTheme(newTheme);
+            });
+
+            // 初始化主題
+            applyTheme(getInitialTheme());
+            // =========================================================================
+            // 2. 原始查詢與渲染邏輯 (調整渲染部分)
+            // =========================================================================
+            const resultsBody = document.getElementById("results");
+            const matchCount = document.getElementById("match-count");
+            const filterSummary = document.getElementById("filter-summary");
+            const treeSidebar = document.getElementById("tree-sidebar");
+            const treeContainer = document.getElementById("tree-container");
+            const layout = document.getElementById("layout");
+            const treeToggle = document.getElementById("tree-toggle");
+            let fieldData = [];
+            let dataLoaded = false;
+            let loading = false;
+            let loadingPromise = null;
+            let treeBuilt = false;
+            let activeTreeRow = null;
+            // 樹狀選單目前的選取，用來鎖定對應的 Model/Field
+            let treeSelection = null;
+
+            const getDirectChildren = (item) => {
+                if (!item) return [];
+                const key = item.model || "";
+                const altKey = item.field || "";
+                return fieldData.filter((child) => child.parent === key || (altKey && child.parent === altKey));
+            };
+
+            const deriveProps = (item) => {
+                const children = getDirectChildren(item);
+                if (children.length) {
+                    return children.map((child) => child.field).filter(Boolean);
+                }
+                return Array.isArray(item?.props) ? item.props : [];
+            };
+
+            const setSidebarState = (open) => {
+                if (!layout) return;
+                layout.classList.toggle("collapsed", !open);
+                if (treeToggle) {
+                    treeToggle.setAttribute("aria-expanded", open ? "true" : "false");
+                }
+            };
+
+            const filters = {
+                field: document.getElementById("filter-field"),
+                type: document.getElementById("filter-type"),
+                required: document.getElementById("filter-required"),
+                enum: document.getElementById("filter-enum"),
+            };
+            const translateToZh = (text = "") => {
+                // 這裡應該是實際的翻譯邏輯，但由於無法存取外部資源，暫時保持原樣或簡單處理
+                return text && text.trim() ? text : "(no description)";
+            };
+            const escapeHtml = (str = "") => (str ?? "").toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+            const formatEnum = (values) => {
+                if (!Array.isArray(values) || values.length === 0) return '<span class="muted">-</span>';
+                return `<span class="enum-list">${values.map((v) => `<span class="enum-item">${escapeHtml(String(v))}</span>`).join("")}</span>`;
+            };
+
+            // 解除樹狀目前的標記（選取與父層醒目）
+            const clearTreeSelection = () => {
+                if (!treeContainer) return;
+                treeContainer.querySelectorAll(".tree-row.selected, .tree-row.selected-ancestor").forEach((el) => {
+                    el.classList.remove("selected", "selected-ancestor");
+                });
+                activeTreeRow = null;
+            };
+
+            // 將父層都套用醒目樣式
+            const highlightAncestors = (row) => {
+                let li = row?.parentElement;
+                while (li && li !== treeContainer) {
+                    const parentLi = li.parentElement?.closest("li");
+                    if (parentLi) {
+                        const parentRow = parentLi.querySelector(":scope > .tree-row");
+                        parentRow?.classList.add("selected-ancestor");
+                    }
+                    li = parentLi;
+                }
+            };
+            const buildTreeData = (data = []) => {
+                const defaultRoot = data[0]?.model?.split(".")[0] || "root";
+                const map = new Map();
+                const root = { name: defaultRoot, key: defaultRoot, children: [], sort: "1" };
+                map.set(defaultRoot, root);
+
+                const ensureNode = (key, name, sort) => {
+                    if (!key) return root;
+                    if (!map.has(key)) {
+                        map.set(key, { name: name || key, key, children: [], sort: sort || "" });
+                    } else if (sort && !map.get(key).sort) {
+                        map.get(key).sort = sort;
+                    }
+                    return map.get(key);
+                };
+
+                // Collect parent relations
+                const relations = new Map();
+                data.forEach((item) => {
+                    const key = item.model || "";
+                    const parentKey = item.parent || defaultRoot;
+                    const name = item.field || key.split(".").pop() || key;
+                    const sort = item.sort || "";
+                    if (!key) return;
+                    relations.set(key, { name, parentKey, required: !!item.required, sort });
+
+                    // Make sure parent node exists with a readable name
+                    if (!relations.has(parentKey)) {
+                        const parentName = parentKey.split(".").pop() || defaultRoot;
+                        relations.set(parentKey, {
+                            name: parentName,
+                            parentKey: parentKey === defaultRoot ? "" : parentKey.split(".").slice(0, -1).join(".") || defaultRoot,
+                            required: false,
+                            sort: "",
+                        });
+                    }
+                });
+
+                // Build nodes
+                relations.forEach(({ name, required, sort }, key) => {
+                    const node = ensureNode(key, name, sort);
+                    if (required) {
+                        node.required = true;
+                    }
+                });
+
+                // Wire up children to parents
+                relations.forEach(({ parentKey }, key) => {
+                    const node = map.get(key);
+                    const parent = ensureNode(parentKey || defaultRoot, parentKey || defaultRoot);
+                    if (parent && node && !parent.children.includes(node) && parent !== node) {
+                        parent.children.push(node);
+                    }
+                });
+
+                // Sort children by sort (numeric-friendly), fallback to name
+                const sortChildren = (node) => {
+                    if (Array.isArray(node.children) && node.children.length) {
+                        node.children.sort((a, b) => {
+                            const sa = a.sort || "";
+                            const sb = b.sort || "";
+                            if (sa && sb && sa !== sb) return sa.localeCompare(sb, undefined, { numeric: true });
+                            if (sa && !sb) return -1;
+                            if (!sa && sb) return 1;
+                            return a.name.localeCompare(b.name);
+                        });
+                        node.children.forEach(sortChildren);
+                    }
+                };
+                sortChildren(root);
+                return root;
+            };
+            const createTreeNode = (node, depth = 0, parentKey = "root") => {
+                const hasChildren = Array.isArray(node.children) && node.children.length > 0;
+                const li = document.createElement("li");
+                li.className = "tree-item";
+                if (hasChildren) {
+                    li.classList.add("collapsible");
+                    li.classList.add(depth === 0 ? "expanded" : "collapsed");
+                } else {
+                    li.classList.add("leaf");
+                }
+
+                const row = document.createElement("div");
+                row.className = "tree-row";
+                row.style.setProperty("--depth", depth);
+                row.dataset.key = node.key || "";
+                row.dataset.name = node.name || "";
+                row.dataset.parentKey = parentKey || "root";
+                row.dataset.hasChildren = hasChildren ? "1" : "";
+                row.dataset.required = node.required ? "1" : "";
+                const requiredMark = node.required ? '<span class="tree-required" aria-hidden="true">*</span>' : "";
+                const caretSymbol = hasChildren ? "▾" : "•";
+                row.innerHTML = `
+                    <span class="tree-caret">${caretSymbol}</span>
+                    <span class="tree-label">${escapeHtml(node.name)}${requiredMark}</span>
+                `;
+                li.appendChild(row);
+
+                if (hasChildren) {
+                    const ul = document.createElement("ul");
+                    ul.className = "tree-children";
+                    node.children.forEach((child) => ul.appendChild(createTreeNode(child, depth + 1, node.key)));
+                    li.appendChild(ul);
+                }
+
+                return li;
+            };
+            const renderTreeSidebar = () => {
+                if (!treeContainer || !fieldData.length) return;
+                const tree = buildTreeData(fieldData);
+                treeContainer.innerHTML = "";
+                tree.children.forEach((child) => {
+                    treeContainer.appendChild(createTreeNode(child, 0));
+                });
+                treeBuilt = true;
+            };
+
+            // Tooltip helpers
+            const tooltipEl = document.getElementById("tooltip");
+            const hideTooltip = () => {
+                tooltipEl.classList.add("hidden");
+            };
+            const showTooltip = (html, x, y) => {
+                tooltipEl.innerHTML = html;
+                tooltipEl.classList.remove("hidden");
+                // Position near the c1ursor with viewport bounds
+                const padding = 12;
+                const { offsetWidth, offsetHeight } = tooltipEl;
+                let left = x + 12;
+                let top = y + 12;
+                const maxLeft = window.innerWidth - offsetWidth - padding;
+                const maxTop = window.innerHeight - offsetHeight - padding;
+                if (left > maxLeft) left = maxLeft;
+                if (top > maxTop) top = maxTop;
+                tooltipEl.style.left = `${Math.max(padding, left)}px`;
+                tooltipEl.style.top = `${Math.max(padding, top)}px`;
+            };
+            const copyToClipboard = async (text, target) => {
+                if (!text) return;
+                let success = false;
+                if (navigator.clipboard?.writeText) {
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        success = true;
+                    } catch (err) {
+                        console.warn("Clipboard write failed", err);
+                    }
+                }
+                if (!success) {
+                    const textarea = document.createElement("textarea");
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand("copy");
+                    } catch (err) {
+                        console.warn("Fallback copy failed", err);
+                    }
+                    document.body.removeChild(textarea);
+                }
+                if (target) {
+                    const rect = target.getBoundingClientRect();
+                    showTooltip(`<strong>Copied</strong><p>${escapeHtml(text)}</p>`, rect.right, rect.top);
+                    setTimeout(hideTooltip, 1000);
+                }
+            };
+            const renderRows = (rows) => {
+                resultsBody.innerHTML = rows
+                    .map((item) => {
+                        const requiredBadge = item.required ? '<span class="badge required">必填</span>' : '<span class="badge optional">選填</span>';
+
+                        const typeClass = item.type ? `field-type-${String(item.type).toLowerCase()}` : "muted";
+                        const derivedProps = deriveProps(item);
+                        const hasProps = Array.isArray(derivedProps) && derivedProps.length > 0;
+                        const propsWithRequired = hasProps
+                            ? derivedProps.map((propName) => ({
+                                  name: propName,
+                                  required: !!fieldData.find((child) => child.field === propName && [item.model, item.field].filter(Boolean).includes(child.parent))?.required,
+                              }))
+                            : [];
+                        const propsButton = hasProps
+                            ? `<button class="props-button" type="button" data-props='${escapeHtml(JSON.stringify(propsWithRequired))}'>${derivedProps.length} props</button>`
+                            : '<span class="muted">-</span>';
+                        const fieldCell = `
+                            <div class="inline-copy">
+                                <button class="field-tooltip" type="button" data-model="${escapeHtml(item.model || "")}" data-field="${escapeHtml(item.field || "")}" data-desc="${escapeHtml(
+                            item.description || ""
+                        )}" data-example="${escapeHtml(item.example || "")}">${escapeHtml(item.field || "")}</button>
+                                <button class="copy-btn" type="button" data-copy="${escapeHtml(
+                                    item.field || ""
+                                )}" aria-label="Copy field" title="Copy field"><span aria-hidden="true">&#128203;</span></button>
+                            </div>`;
+                        return `
+                        <tr>
+                            <td class="nowrap">${fieldCell}</td>
+                            <td class="nowrap"><span class="field-value ${typeClass}">${escapeHtml(item.type || "")}</span></td>
+                            <td class="nowrap">${propsButton}</td>
+                            <td class="nowrap field-required">${requiredBadge}</td>
+                            <td>${formatEnum(item.enum)}</td>
+                        </tr>
+                    `;
+                    })
+                    .join("");
+                matchCount.textContent = `${rows.length} matches`;
+            };
+            const buildDescriptionTooltip = (model = "", field = "", desc = "", example = "") => {
+                const modelLine = model || field ? `<p class="tooltip-model">${escapeHtml(model || field)}</p>` : "";
+                const safeDesc = desc && desc.trim() ? escapeHtml(desc).replace(/\\n/g, "<br>") : "(no description)";
+                const hasExample = example !== null && example !== undefined && String(example).trim() !== "";
+                const safeExample = hasExample ? escapeHtml(String(example)).replace(/\\n/g, "<br>") : "(no example)";
+                return `
+                    <div>
+                        ${modelLine}
+                        <strong>Description</strong>
+                        <p>${safeDesc}</p>
+                        <strong>Example</strong>
+                        <p>${safeExample}</p>
+                    </div>
+                `;
+            };
+            const buildPropsTooltip = (propsStr = "") => {
+                let props = [];
+                try {
+                    props = JSON.parse(propsStr) || [];
+                } catch (err) {
+                    props = [];
+                }
+                if (!Array.isArray(props) || !props.length) return "";
+                const items = props
+                    .map((p) => {
+                        const name = typeof p === "string" ? p : p?.name || "";
+                        const required = typeof p === "object" && !!p?.required;
+                        const star = required ? '<span style="color:#d32f2f;font-weight:700;margin-left:4px;">*</span>' : "";
+                        return `<li>${escapeHtml(String(name))}${star}</li>`;
+                    })
+                    .join("");
+                return `
+                    <div>
+                        <strong>Props</strong>
+                        <ul>${items}</ul>
+                    </div>
+                `;
+            };
+            const fuzzyIncludes = (value, term) => (value ?? "").toString().toLowerCase().includes(term.toLowerCase());
+            const requiredLabel = (val) => (val ? "true required yes 必填 必要" : "false optional no 選填 不必要");
+            const filterRows = (terms) =>
+                fieldData.filter((item) => {
+                    const itemDescription = item.description || "";
+                    const itemZhDescription = translateToZh(itemDescription);
+                    const itemEnum = (item.enum || []).join(", ");
+                    return (
+                        (!terms.treeFieldExact || item.field === terms.treeFieldExact) &&
+                        (!terms.treeModel || item.model === terms.treeModel) &&
+                        (!terms.field || fuzzyIncludes(item.field, terms.field)) &&
+                        (!terms.type || fuzzyIncludes(item.type, terms.type)) &&
+                        (!terms.required || fuzzyIncludes(requiredLabel(item.required), terms.required)) &&
+                        (!terms.enum || fuzzyIncludes(itemEnum, terms.enum))
+                    );
+                });
+            const formatSummary = (terms) => {
+                const labels = {
+                    field: "Field",
+                    type: "Type",
+                    required: "Required",
+                    enum: "Enum",
+                };
+                const chips = [];
+                if (terms.treeModel) {
+                    chips.push(`<span class="summary-chip"><strong>Model:</strong> ${escapeHtml(terms.treeModel)}</span>`);
+                }
+                for (const [key, label] of Object.entries(labels)) {
+                    const val = terms[key];
+                    if (val) {
+                        chips.push(`<span class="summary-chip"><strong>${label}:</strong> ${escapeHtml(val)}</span>`);
+                    }
+                }
+                return chips.length ? `Current filters: ${chips.join(" ")}` : "Current filters: none.";
+            };
+            const renderPlaceholder = (message) => {
+                resultsBody.innerHTML = `<tr><td colspan="5" class="muted" style="text-align: center; padding: 30px;">${escapeHtml(message)}</td></tr>`;
+            };
+            const ensureData = async () => {
+                if (dataLoaded) {
+                    if (!treeBuilt) {
+                        renderTreeSidebar();
+                    }
+                    return;
+                }
+                if (loadingPromise) {
+                    await loadingPromise;
+                    if (!treeBuilt) {
+                        renderTreeSidebar();
+                    }
+                    return;
+                }
+                loading = true;
+                matchCount.textContent = "數據載入中...";
+                loadingPromise = (async () => {
+                    try {
+                        const url = new URL(fileName, window.location.href);
+                        const res = await fetch(url);
+                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                        fieldData = await res.json();
+                        dataLoaded = true;
+                        matchCount.textContent = "資料已載入";
+                        renderTreeSidebar();
+                        populateFilterOptions();
+                    } catch (err) {
+                        resultsBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--type-color-object);">無法讀取 parsed_fields_filtered.json：${escapeHtml(
+                            err.message
+                        )}。請檢查檔案。</td></tr>`;
+                        matchCount.textContent = "載入失敗";
+                        console.error(err);
+                    } finally {
+                        loading = false;
+                        loadingPromise = null;
+                    }
+                })();
+                await loadingPromise;
+            };
+            resultsBody.addEventListener("click", async (event) => {
+                const copyBtn = event.target.closest(".copy-btn");
+                const fieldBtn = event.target.closest(".field-tooltip");
+                const propsBtn = event.target.closest(".props-button");
+
+                if (copyBtn) {
+                    await copyToClipboard(copyBtn.dataset.copy || "", copyBtn);
+                    event.stopPropagation();
+                    return;
+                }
+
+                if (fieldBtn) {
+                    const html = buildDescriptionTooltip(fieldBtn.dataset.model || "", fieldBtn.dataset.field || "", fieldBtn.dataset.desc || "", fieldBtn.dataset.example || "");
+                    showTooltip(html, event.clientX, event.clientY);
+                    event.stopPropagation();
+                    return;
+                }
+
+                if (propsBtn) {
+                    const html = buildPropsTooltip(propsBtn.dataset.props || "");
+                    if (html) {
+                        showTooltip(html, event.clientX, event.clientY);
+                    } else {
+                        hideTooltip();
+                    }
+                    event.stopPropagation();
+                }
+            });
+            document.addEventListener("click", (event) => {
+                if (!event.target.closest(".field-tooltip") && !event.target.closest(".props-button") && !event.target.closest("#tooltip")) {
+                    hideTooltip();
+                }
+            });
+            window.addEventListener("scroll", hideTooltip);
+
+            // 點擊樹狀節點時，帶入 Field 並自動查詢
+            treeContainer?.addEventListener("click", (event) => {
+                const row = event.target.closest(".tree-row");
+                if (!row) return;
+                const item = row.parentElement;
+                const caretClicked = !!event.target.closest(".tree-caret");
+
+                // 點擊 icon 只展開/收合，不觸發查詢
+                if (item?.classList.contains("collapsible")) {
+                    item.classList.toggle("expanded");
+                    item.classList.toggle("collapsed");
+                    if (caretClicked) return;
+                }
+
+                clearTreeSelection();
+                row.classList.add("selected");
+                activeTreeRow = row;
+                const selectedModel = row.dataset.key || "";
+                treeSelection = { field: "", model: selectedModel };
+                filters.field.value = "";
+                highlightAncestors(row);
+                applyFilters();
+            });
+            treeToggle?.addEventListener("click", async () => {
+                const shouldOpen = layout?.classList.contains("collapsed");
+                setSidebarState(!!shouldOpen);
+                if (shouldOpen) {
+                    await ensureData();
+                }
+            });
+            setSidebarState(true);
+            const collectTerms = () => ({
+                field: filters.field.value.trim(),
+                type: filters.type.value,
+                required: filters.required.value,
+                enum: filters.enum.value.trim(),
+                treeModel: treeSelection?.model || "",
+                treeFieldExact: treeSelection?.field || "",
+            });
+            const populateFilterOptions = () => {
+                if (!Array.isArray(fieldData) || !fieldData.length) return;
+                const typeSelect = filters.type;
+
+                const fieldList = document.getElementById("field-options");
+                if (typeSelect) {
+                    const typeSet = new Set();
+
+                    fieldData.forEach((item) => {
+                        if (item.type === "anyOf" || item.type === "oneOf") {
+                            return;
+                        } else {
+                            if (item.type) typeSet.add(String(item.type));
+                        }
+                    });
+
+                    const options = [
+                        '<option value="">【any】</option>',
+                        ...Array.from(typeSet)
+                            .sort()
+                            .map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`),
+                    ];
+                    typeSelect.innerHTML = options.join("");
+                }
+
+                if (fieldList) {
+                    const fieldSet = new Set();
+                    fieldData.forEach((item) => {
+                        if (item.field) fieldSet.add(String(item.field));
+                    });
+                    fieldList.innerHTML = Array.from(fieldSet)
+                        .sort()
+                        .map((f) => `<option value="${escapeHtml(f)}"></option>`)
+                        .join("");
+                }
+            };
+            const applyFilters = async () => {
+                const terms = collectTerms();
+                const hasInput = Object.values(terms).some((v) => v);
+
+                await ensureData();
+                if (!dataLoaded) return;
+
+                if (!hasInput) {
+                    renderPlaceholder("Enter filters to search (no results shown).");
+                    matchCount.textContent = "No query yet";
+                    filterSummary.innerHTML = "Current filters: none.";
+                    return;
+                }
+
+                const rows = filterRows(terms);
+
+                filterSummary.innerHTML = formatSummary(terms);
+                if (rows.length === 0) {
+                    renderPlaceholder("No data found. Try adjusting keywords.");
+                    matchCount.textContent = "0 matches";
+                    return;
+                }
+                renderRows(rows);
+            };
+            const resetFilters = () => {
+                Object.values(filters).forEach((input) => {
+                    input.value = "";
+                });
+                treeSelection = null;
+                clearTreeSelection();
+                matchCount.textContent = "No query yet";
+                renderPlaceholder("Cleared. Please enter keywords to search.");
+                filterSummary.innerHTML = "Current filters: none.";
+            };
+            // 事件監聽
+            Object.values(filters).forEach((input) =>
+                input.addEventListener("input", () => {
+                    if (input === filters.field) {
+                        // 手動輸入 Field 覆蓋樹狀選取
+                        treeSelection = null;
+                        clearTreeSelection();
+                    }
+                    applyFilters();
+                })
+            );
+            document.getElementById("search-button").addEventListener("click", applyFilters);
+            document.getElementById("reset-button").addEventListener("click", resetFilters);
+
+            // 預先載入資料，讓 Type 下拉選單有選項
+            ensureData();
+            // 初始提示
+            renderPlaceholder("Enter keywords to search (data loads on first search).");
+        </script>
+    </body>
+</html>

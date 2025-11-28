@@ -106,7 +106,7 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 340px minmax(0, 1fr);
+    grid-template-columns: minmax(260px, max-content) minmax(0, 1fr);
     gap: 24px;
     align-items: start;
     position: relative;
@@ -189,7 +189,9 @@ body {
 }
 
 .tree-panel {
-    width: 100%;
+    width: fit-content;
+    min-width: 260px;
+    max-width: 520px;
     height: 100%;
     max-height: calc(100vh - 160px);
     background: var(--card);
@@ -305,15 +307,19 @@ body {
     background: var(--tree-caret-bg);
     color: var(--tree-caret-color);
     border: 1px solid var(--stroke);
-    font-size: 14px; font-weight: 800; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    font-size: 14px;
+    font-weight: 800;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
-.tree-item.expanded > .tree-row /* caret */
-.tree-caret {
-    transform: rotate(90deg);
+.tree-caret::before {
+    content: "▸";
 }
-.tree-item.leaf /* caret */
-.tree-caret {
+.tree-item.expanded > .tree-row .tree-caret::before {
+    content: "▾";
+}
+.tree-item.leaf .tree-caret::before {
+    content: "•";
     opacity: 0.5;
 }
 .tree-label {
@@ -1045,7 +1051,7 @@ div[class="user-message"] {
         font-size: 28px;
     }
     .layout {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(240px, max-content) minmax(0, 1fr);
         gap: 16px;
     }
     .layout.collapsed {
@@ -1078,12 +1084,17 @@ div[class="user-message"] {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     body {
         padding: 16px 12px 32px;
     }
     .layout {
+        grid-template-columns: 1fr;
         gap: 12px;
+    }
+    .tree-panel {
+        width: 100%;
+        max-width: none;
     }
     .tree-panel {
         max-height: none;
