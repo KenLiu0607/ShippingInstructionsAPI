@@ -27,6 +27,11 @@
     /* Dark Mode Toggle */
     --toggle-bg: #cbd5e1;
     --toggle-handle: #ffffff;
+
+    /* RAGi */
+    --yfy-red: #d3112f;
+    --yfy-black: #000000;
+    --yfy-gray: #f6f6f6;
 }
 
 [data-theme="dark"] {
@@ -74,21 +79,83 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.page {
-    max-width: 1200px;
+.page-header {
+    max-width: 1400px;
+    margin: 0 auto 20px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.layout {
+    max-width: 1400px;
     margin: 0 auto;
+    display: grid;
+    grid-template-columns: 340px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+    position: relative;
+    padding-top: 4px;
+}
+
+.layout.collapsed {
+    grid-template-columns: 0 minmax(0, 1fr);
+}
+
+.layout.collapsed .tree-sidebar {
+    opacity: 0;
+    transform: translateX(-16px);
+    pointer-events: none;
+    max-width: 0;
+    width: 0;
+    overflow: hidden;
+}
+
+.sidebar-toggle {
+    position: absolute;
+    top: 6px;
+    left: 360px;
+    border-radius: 999px;
+    padding: 10px 12px;
+    border: 1px solid var(--stroke);
+    background: var(--card);
+    color: var(--text);
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow);
+    transition: left 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    z-index: 15;
+}
+.layout.collapsed .sidebar-toggle {
+    left: 12px;
+}
+.sidebar-toggle:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.content {
+    width: 100%;
     position: relative;
 }
 
 .tree-sidebar {
-    position: fixed;
-    top: 50%;
-    left: 12px;
-    transform: translateY(-50%);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    z-index: 1600;
+    position: sticky;
+    top: 0;
+    align-self: start;
+    z-index: 10;
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
 .sidebar-handle {
@@ -110,34 +177,26 @@ body {
 }
 
 .tree-panel {
-    width: 400px;
-    max-height: calc(100vh - 64px);
+    width: 100%;
+    height: 100%;
+    max-height: calc(100vh - 160px);
     background: var(--card);
     border: 1px solid var(--stroke);
     border-radius: 16px;
     box-shadow: var(--shadow);
     overflow: hidden;
-    opacity: 0;
-    transform: translateX(-12px);
-    transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-    pointer-events: none;
+    opacity: 1;
+    transform: none;
+    transition: box-shadow 0.3s ease;
+    pointer-events: auto;
     backdrop-filter: blur(8px);
 }
 
-.tree-sidebar.open .tree-panel {
-    opacity: 1;
-    transform: translateX(0);
-    pointer-events: auto;
-}
+.tree-sidebar.open .tree-panel,
 .tree-sidebar.collapsed .tree-panel {
-    width: 0;
-    padding: 0;
-    border: none;
-    box-shadow: none;
-    opacity: 0;
-    transform: translateX(-16px) scaleX(0.92);
-    pointer-events: none;
-    overflow: hidden;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
 }
 
 .tree-panel-header {
@@ -154,7 +213,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.12em;
     font-size: 11px;
-    color: var(--muted);
+    color: var(--accent);
     font-weight: 800;
 }
 .panel-title {
@@ -184,7 +243,7 @@ body {
 }
 
 .tree-scroll {
-    max-height: calc(100vh - 138px);
+    max-height: calc(100vh - 240px);
     overflow: auto;
     padding: 10px 10px 14px 6px;
     background: linear-gradient(180deg, rgba(148, 163, 184, 0.08), transparent);
@@ -198,7 +257,7 @@ body {
 
 .tree-item {
     color: var(--text);
-    font-size: 12px;
+    font-size: 14px;
 }
 .tree-row {
     display: flex;
@@ -210,7 +269,7 @@ body {
     transition: background 0.2s ease, color 0.2s ease;
 }
 .tree-row:hover {
-    background: var(--bg2);
+    background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(16,185,129,0.18));
     color: var(--accent);
 }
 .tree-row.selected {
@@ -223,26 +282,29 @@ body {
     background: linear-gradient(135deg, rgba(244, 63, 94, 0.12), rgba(248, 113, 113, 0.12));
     border: 1px solid rgba(239, 68, 68, 0.25);
 }
+/* caret */
 .tree-caret {
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 6px;
-    background: var(--bg2);
-    color: var(--muted);
-    font-size: 12px;
+    background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(16,185,129,0.18));
+    color: var(--accent);
+    font-size: 14px; font-weight: 800; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
-.tree-item.expanded > .tree-row .tree-caret {
+.tree-item.expanded > .tree-row /* caret */
+.tree-caret {
     transform: rotate(90deg);
 }
-.tree-item.leaf .tree-caret {
+.tree-item.leaf /* caret */
+.tree-caret {
     opacity: 0.5;
 }
 .tree-label {
-    font-weight: 700;
+    /* font-weight: 700; */
     letter-spacing: -0.01em;
 }
 
@@ -277,13 +339,13 @@ h1 {
 }
 .lead {
     margin: 0;
-    color: var(--muted);
+    color: var(--accent);
     font-size: 16px;
 }
 
 /* =========================================================================
-            * 3. Dark Mode ????
-            * ========================================================================= */
+* 3. Dark Mode ????
+* ========================================================================= */
 .dark-mode-toggle {
     cursor: pointer;
     width: 56px;
@@ -318,15 +380,15 @@ h1 {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    color: var(--muted);
+    color: var(--accent);
     font-size: 13px;
     font-weight: 600;
     white-space: nowrap;
 }
 
 /* =========================================================================
-            * 4. 撌亙甈??蕪??(Toolbar & Filters)
-            * ========================================================================= */
+* 4. 撌亙甈??蕪??(Toolbar & Filters)
+* ========================================================================= */
 .toolbar {
     padding: 24px;
     background: var(--card);
@@ -350,7 +412,7 @@ h1 {
 
 .field span {
     font-size: 11px;
-    color: var(--muted);
+    color: var(--accent);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-weight: 600;
@@ -413,10 +475,9 @@ h1 {
     font-weight: 600;
 }
 
-
 /* =========================================================================
-            * 5. ?? (Buttons)
-            * ========================================================================= */
+* 5. ?? (Buttons)
+* ========================================================================= */
 button {
     border: 1px solid var(--stroke);
     background: var(--card);
@@ -464,14 +525,14 @@ button.primary:hover::after {
 }
 
 /* =========================================================================
-            * 6. ??閮??酉 (Meta & Note)
-            * ========================================================================= */
+* 6. ??閮??酉 (Meta & Note)
+* ========================================================================= */
 .meta {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
     align-items: center;
-    color: var(--muted);
+    color: var(--accent);
     font-size: 14px;
 }
 
@@ -482,7 +543,7 @@ button.primary:hover::after {
     padding: 8px 14px;
     border-radius: 999px;
     border: 1px solid var(--stroke);
-    background: var(--bg2);
+    background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(16,185,129,0.18));
     color: var(--text);
     font-weight: 600;
     font-size: 13px;
@@ -498,8 +559,8 @@ button.primary:hover::after {
 }
 
 /* =========================================================================
-            * 7. 銵冽璅?? (Table)
-            * ========================================================================= */
+* 7. 銵冽璅?? (Table)
+* ========================================================================= */
 table {
     width: 100%;
     border-collapse: separate;
@@ -512,7 +573,7 @@ table {
 }
 
 thead {
-    background: var(--bg2);
+    background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(16,185,129,0.18));
     transition: background 0.3s;
 }
 
@@ -537,12 +598,12 @@ tbody tr:last-child td {
 }
 
 tbody tr:hover {
-    background: var(--bg2);
+    background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(16,185,129,0.18));
     transition: background 0.2s ease;
 }
 
 .muted {
-    color: var(--muted);
+    color: var(--accent);
 }
 
 /* ?啣?嚗?雿潛?璅??摰孵 */
@@ -552,8 +613,8 @@ tbody tr:hover {
 }
 
 /* =========================================================================
-            * 8. 璅惜?噬蝡?(Badges)
-            * ========================================================================= */
+* 8. 璅惜?噬蝡?(Badges)
+* ========================================================================= */
 .badge {
     display: inline-flex;
     align-items: center;
@@ -589,8 +650,8 @@ tbody tr:hover {
 }
 
 /* =========================================================================
-            * 9. 蝔?蝣潸?????(Code & Enum)
-            * ========================================================================= */
+* 9. 蝔?蝣潸?????(Code & Enum)
+* ========================================================================= */
 .enum-list {
     display: flex;
     flex-wrap: wrap;
@@ -610,7 +671,7 @@ tbody tr:hover {
 }
 
 code {
-    background: var(--bg2);
+    background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(16,185,129,0.18));
     padding: 3px 8px;
     border-radius: 6px;
     font-family: monospace;
@@ -702,8 +763,8 @@ code {
     border: 1px solid var(--stroke);
     background: var(--card);
     cursor: pointer;
-    font-size: 12px;
-    color: var(--muted);
+    font-size: 14px; font-weight: 800; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    color: var(--accent);
     transition: all 0.15s ease;
 }
 .copy-btn:hover {
@@ -719,7 +780,11 @@ code {
 /* Tooltip */
 .tooltip {
     position: fixed;
-    max-width: 320px;
+    display: inline-block;
+    width: max-content;
+    max-width: min(90vw, 1100px);
+    min-width: 260px;
+    word-break: break-word;
     background: var(--card);
     color: var(--text);
     border: 1px solid var(--stroke);
@@ -746,14 +811,217 @@ code {
     margin: 0;
     padding-left: 16px;
 }
+.tooltip-model {
+    color: #d32f2f;
+    font-weight: 700;
+    margin: 0 0 6px;
+}
+.tree-required {
+    color: #e53935;
+    font-weight: 700;
+    margin-left: 4px;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.35);
+}
 
 /* ?啣?嚗escription/銝剜?隤芣? ??摮??脰?璅?? */
 .field-description {
     font-weight: 500;
 }
 .field-zh-description {
-    color: var(--muted);
+    color: var(--accent);
     font-size: 13px;
+}
+/* 🔘 右下角聊天按鈕 - 固定在視窗右下角 */
+#chat-button,
+[id*="chat-button"],
+.chat-button {
+    background: var(--yfy-red) !important;
+    color: white !important;
+    border-radius: 50% !important;
+    width: 60px !important;
+    height: 60px !important;
+    font-size: 26px !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
+    bottom: 30px !important;
+    right: 30px !important;
+    position: fixed !important;
+    z-index: 1000 !important;
+    left: auto !important;
+    top: auto !important;
+}
+
+/* 💬 主視窗 - 固定在右下角 */
+#chat-box,
+[id*="chat-box"],
+.chat-box {
+    border-radius: 18px !important;
+    border: none !important;
+    overflow: hidden !important;
+    box-shadow: 0px 10px 40px rgba(0, 0, 0, 0.2) !important;
+    max-height: calc(100vh - 150px) !important;
+    bottom: 110px !important;
+    right: 30px !important;
+    height: 600px !important;
+    position: fixed !important;
+    z-index: 999 !important;
+    left: auto !important;
+    top: auto !important;
+}
+
+/* 🔺 Header（淡粉紅色 + Logo） */
+#chat-header {
+    background: #fcd9dd !important;
+    color: var(--yfy-red) !important;
+    padding-left: 70px !important;
+    position: relative !important;
+}
+
+/* ⬅️ 插入永豐餘 Logo（本地檔案） */
+#chat-header::before {
+    content: "" !important;
+    position: absolute !important;
+    left: 20px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 32px !important;
+    height: 32px !important;
+    background-image: url("assets/images/logo.png") !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+}
+
+/* ✏️ Header 名稱 & 狀態文字 */
+#chat-header-name {
+    font-weight: bold !important;
+    color: var(--yfy-red) !important;
+}
+
+#chat-header-status {
+    color: #d3112f !important;
+    opacity: 0.8 !important;
+}
+
+/* 🧩 User 氣泡 */
+#chat-messages .message.user,
+.message.user,
+.user-message,
+div[class="user-message"] {
+    background: #eaebee !important;
+    background-color: #eaebee !important;
+    color: #000000 !important;
+    border-radius: 14px !important;
+}
+
+/* system-message */
+.system-message,
+.message.system,
+[class*="system-message"] {
+    background: #eaebee !important;
+    background-color: #eaebee !important;
+    color: #000000 !important;
+    border-radius: 14px !important;
+}
+
+/* 🤖 Bot 氣泡 */
+#chat-messages .message.bot,
+.message.bot,
+[class*="bot-message"],
+[class*="botMessage"],
+.bot-message {
+    background: #eaebee !important;
+    background-color: #eaebee !important;
+    border: 1px solid #d0d1d5 !important;
+    padding: 12px 15px !important;
+    margin: 5px 10px !important;
+    max-width: 85% !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    box-sizing: border-box !important;
+}
+/* Bot 訊息內的所有子元素 */
+.message.bot *,
+.bot-message *,
+[class*="bot-message"] *,
+.system-message * {
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+/* Bot 訊息內的列表 */
+.message.bot ul,
+.message.bot ol,
+.bot-message ul,
+.bot-message ol,
+.system-message ul,
+.system-message ol {
+    padding-left: 20px !important;
+    margin: 5px 0 !important;
+}
+
+/* Bot 訊息內的列表項目 */
+.message.bot li,
+.bot-message li,
+.system-message li {
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+/* 👤 Bot avatar：改成永豐餘 logo */
+.message-avatar img {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 4px !important;
+    content: url("assets/images/logo.png") !important;
+}
+
+/* 📝 輸入框樣式 */
+#chat-input {
+    background: var(--yfy-gray) !important;
+    border-top: 1px solid #eee !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+#chat-input button {
+    color: var(--yfy-red) !important;
+}
+
+/* 確保訊息區域不會遮住輸入框，且內容不超出邊界 */
+#chat-messages {
+    max-height: calc(100% - 140px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-bottom: 10px !important;
+    box-sizing: border-box !important;
+}
+
+/* 確保訊息泡泡不超出邊界 */
+#chat-messages > div,
+.message,
+.system-message,
+.user-message,
+[class*="message"] {
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    box-sizing: border-box !important;
+}
+
+/* Bot 訊息內容限制 */
+#chat-messages .message.bot,
+.message.bot,
+.bot-message,
+[class*="bot-message"],
+[class*="system-message"] {
+    max-width: 85% !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
 }
 
 /* =========================================================================
@@ -763,11 +1031,23 @@ code {
     h1 {
         font-size: 28px;
     }
-    .toolbar {
-        padding: 20px;
+    .layout {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .sidebar-toggle {
+        left: 12px;
+        top: -4px;
+    }
+    .tree-sidebar {
+        position: relative;
+        top: 0;
     }
     .tree-panel {
-        width: 320px;
+        max-height: none;
+    }
+    .toolbar {
+        padding: 20px;
     }
     .filters {
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -783,15 +1063,11 @@ code {
     body {
         padding: 16px 12px 32px;
     }
-    .tree-sidebar {
-        top: auto;
-        bottom: 18px;
-        transform: none;
-        left: 10px;
+    .layout {
+        gap: 12px;
     }
     .tree-panel {
-        width: 300px;
-        max-height: 70vh;
+        max-height: none;
     }
     header {
         flex-direction: column;
@@ -815,5 +1091,3 @@ code {
         min-width: 120px;
     }
 }
-
-
