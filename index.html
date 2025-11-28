@@ -91,8 +91,7 @@
                 <div id="tooltip" class="tooltip hidden"></div>
             </div>
         </div>
-
-     
+       
 
         <!-- Main Script -->
         <script>
@@ -141,6 +140,21 @@
             let activeTreeRow = null;
             // 樹狀選單目前的選取，用來鎖定對應的 Model/Field
             let treeSelection = null;
+
+            const getDirectChildren = (item) => {
+                if (!item) return [];
+                const key = item.model || "";
+                const altKey = item.field || "";
+                return fieldData.filter((child) => child.parent === key || (altKey && child.parent === altKey));
+            };
+
+            const deriveProps = (item) => {
+                const children = getDirectChildren(item);
+                if (children.length) {
+                    return children.map((child) => child.field).filter(Boolean);
+                }
+                return Array.isArray(item?.props) ? item.props : [];
+            };
 
             const setSidebarState = (open) => {
                 if (!layout) return;
@@ -360,15 +374,16 @@
                         const requiredBadge = item.required ? '<span class="badge required">必填</span>' : '<span class="badge optional">選填</span>';
 
                         const typeClass = item.type ? `field-type-${String(item.type).toLowerCase()}` : "muted";
-                        const hasProps = Array.isArray(item.props) && item.props.length > 0;
+                        const derivedProps = deriveProps(item);
+                        const hasProps = Array.isArray(derivedProps) && derivedProps.length > 0;
                         const propsWithRequired = hasProps
-                            ? item.props.map((propName) => ({
+                            ? derivedProps.map((propName) => ({
                                   name: propName,
                                   required: !!fieldData.find((child) => child.field === propName && [item.model, item.field].filter(Boolean).includes(child.parent))?.required,
                               }))
                             : [];
                         const propsButton = hasProps
-                            ? `<button class="props-button" type="button" data-props='${escapeHtml(JSON.stringify(propsWithRequired))}'>${item.props.length} props</button>`
+                            ? `<button class="props-button" type="button" data-props='${escapeHtml(JSON.stringify(propsWithRequired))}'>${derivedProps.length} props</button>`
                             : '<span class="muted">-</span>';
                         const fieldCell = `
                             <div class="inline-copy">
